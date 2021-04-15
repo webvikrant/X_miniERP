@@ -1,4 +1,4 @@
-package in.co.itlabs.minierp.business.util;
+package in.co.itlabs.minierp.util;
 
 public class Fields {
 

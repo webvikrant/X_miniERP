@@ -1,8 +1,10 @@
-package in.co.itlabs.minierp.business.services;
+package in.co.itlabs.minierp.services;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+
+import javax.enterprise.context.ApplicationScoped;
 
 import org.sql2o.Sql2o;
 import org.sql2o.converters.Converter;
@@ -12,11 +14,10 @@ import org.sql2o.quirks.Quirks;
 
 import com.mysql.cj.jdbc.MysqlConnectionPoolDataSource;
 import com.mysql.cj.jdbc.MysqlDataSource;
-import com.vaadin.cdi.annotation.VaadinServiceScoped;
 
-@VaadinServiceScoped
+@ApplicationScoped
 public class DatabaseService {
-	private final Sql2o sql2o;
+	private Sql2o sql2o;
 
 	public DatabaseService() throws SQLException {
 

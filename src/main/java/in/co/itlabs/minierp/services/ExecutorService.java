@@ -1,16 +1,15 @@
-package in.co.itlabs.minierp.business.services;
+package in.co.itlabs.minierp.services;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.annotation.PreDestroy;
+import javax.enterprise.context.ApplicationScoped;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.cdi.annotation.VaadinServiceScoped;
-
-@VaadinServiceScoped
+@ApplicationScoped
 public class ExecutorService {
 	private static ThreadPoolExecutor onDemandExecutor;
 

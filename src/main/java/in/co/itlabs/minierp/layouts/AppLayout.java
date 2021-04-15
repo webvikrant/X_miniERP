@@ -7,14 +7,22 @@ import javax.inject.Inject;
 
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 
 import in.co.itlabs.minierp.components.Footer;
 import in.co.itlabs.minierp.components.Header;
 import in.co.itlabs.minierp.components.Navigation;
 
+@JsModule("@vaadin/vaadin-lumo-styles/presets/compact.js")
+@Theme(Lumo.class)
 @CssImport("./styles/shared-styles.css")
+@Push(PushMode.MANUAL)
 public class AppLayout extends VerticalLayout implements RouterLayout {
 
 	@Inject

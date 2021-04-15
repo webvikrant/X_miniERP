@@ -4,14 +4,15 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ViewScoped;
+import javax.faces.view.ViewScoped;
 
+import com.vaadin.cdi.annotation.UIScoped;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
-@ViewScoped
+@UIScoped
 public class Header extends HorizontalLayout {
 
 	private Icon icon;
