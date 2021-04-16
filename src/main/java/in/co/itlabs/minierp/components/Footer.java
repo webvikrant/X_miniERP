@@ -1,7 +1,6 @@
 package in.co.itlabs.minierp.components;
 
 import javax.annotation.PostConstruct;
-import javax.faces.view.ViewScoped;
 
 import com.vaadin.cdi.annotation.UIScoped;
 import com.vaadin.flow.component.button.Button;

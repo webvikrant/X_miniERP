@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -20,10 +21,12 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 
 import in.co.itlabs.minierp.components.NewStudentComponent;
 import in.co.itlabs.minierp.components.StudentFilterComponent;
 import in.co.itlabs.minierp.components.StudentsExporter;
+import in.co.itlabs.minierp.entities.College;
 import in.co.itlabs.minierp.entities.Student;
 import in.co.itlabs.minierp.layouts.AppLayout;
 import in.co.itlabs.minierp.services.StudentService;
@@ -47,6 +50,8 @@ public class StudentsView extends VerticalLayout {
 	@Inject
 	private StudentsExporter exporter;
 
+	private int collegeId = 0;
+
 	private Grid<Student> grid = new Grid<>(Student.class);
 	private final Div resultCount = new Div();
 
@@ -59,6 +64,11 @@ public class StudentsView extends VerticalLayout {
 
 		setPadding(false);
 		setAlignItems(Alignment.CENTER);
+
+		College college = VaadinSession.getCurrent().getAttribute(College.class);
+		if (college != null) {
+			collegeId = college.getId();
+		}
 
 		Div titleDiv = new Div();
 		buildTitle(titleDiv);
@@ -99,13 +109,20 @@ public class StudentsView extends VerticalLayout {
 	private void configureGrid() {
 		grid.removeAllColumns();
 
-		grid.addColumn(student -> {
-			return student.getCollege().getCode();
-		}).setHeader("College");
-
 		grid.addColumn("prnNo").setHeader("PRN No").setWidth("100px");
 		grid.addColumn("admissionId").setHeader("Admission No").setWidth("100px");
 		grid.addColumn("name").setHeader("Name").setWidth("150px");
+
+		grid.addComponentColumn(student -> {
+			Button button = new Button("More", VaadinIcon.ARROW_FORWARD.create());
+			button.addThemeVariants(ButtonVariant.LUMO_SMALL);
+			button.addClickListener(e -> {
+				VaadinSession.getCurrent().setAttribute(Student.class, student);
+				UI.getCurrent().navigate("student-details");
+			});
+
+			return button;
+		}).setHeader("More");
 
 	}
 
@@ -119,7 +136,6 @@ public class StudentsView extends VerticalLayout {
 			dialog.open();
 			dialog.add(exporter);
 
-			
 		});
 
 		Select<StudentReport> reportSelect = new Select<>();
@@ -175,7 +191,7 @@ public class StudentsView extends VerticalLayout {
 	}
 
 	public void reload() {
-		List<Student> students = studentService.getStudents(filterParams);
+		List<Student> students = studentService.getStudents(collegeId, filterParams);
 		resultCount.setText("Record(s) found: " + students.size());
 		grid.setItems(students);
 	}

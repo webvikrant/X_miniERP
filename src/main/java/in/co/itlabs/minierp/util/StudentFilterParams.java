@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 
 public class StudentFilterParams {
-	
+
 	public enum FilterType {
 		BASIC
 	}

@@ -29,10 +29,14 @@ public class Student {
 	// foreign keys
 	private int collegeId;
 	private int sessionId;
+	private int photographMediaId;
+	private int signatureMediaId;
 
 	// transient
-	private College college;
+//	private College college;
 	private Session session;
+	private Media photographMedia;
+	private Media signatureMedia;
 
 	// ==================================================================================
 	public static final String ID = "id";
@@ -53,5 +57,7 @@ public class Student {
 		admissionId = null;
 		collegeId = 0;
 		sessionId = 0;
+		photographMediaId = 0;
+		signatureMediaId = 0;
 	}
 }

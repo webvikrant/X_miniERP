@@ -1,12 +1,12 @@
 package in.co.itlabs.minierp.components;
 
 import javax.annotation.PostConstruct;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 
 import com.vaadin.cdi.annotation.UIScoped;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Span;
@@ -27,7 +27,10 @@ import in.co.itlabs.minierp.services.CollegeService;
 @UIScoped
 public class NewStudentComponent extends VerticalLayout {
 
-	private Select<College> collegeSelect;
+	private int collegeId = 0;
+
+	private Text collegeText;
+//	private Select<College> collegeSelect;
 	private Select<Session> sessionSelect;
 	private TextField prnNoField;
 	private TextField admissionIdField;
@@ -44,10 +47,17 @@ public class NewStudentComponent extends VerticalLayout {
 	@PostConstruct
 	public void init() {
 
-		setPadding(false);
+		setAlignItems(Alignment.CENTER);
 
-		collegeSelect = new Select<College>();
-		configureCollegeSelect();
+		collegeText = new Text("");
+
+		College college = VaadinSession.getCurrent().getAttribute(College.class);
+		if (college != null) {
+			collegeId = college.getId();
+			collegeText.setText(college.getCode() + " - " + college.getName());
+		}
+//		collegeSelect = new Select<College>();
+//		configureCollegeSelect();
 
 		sessionSelect = new Select<Session>();
 		configureSessionSelect();
@@ -63,7 +73,7 @@ public class NewStudentComponent extends VerticalLayout {
 
 		binder = new Binder<>(Student.class);
 
-		binder.forField(collegeSelect).asRequired("College can not be blank").bind("college");
+//		binder.forField(collegeSelect).asRequired("College can not be blank").bind("college");
 		binder.forField(sessionSelect).asRequired("Session can not be blank").bind("session");
 		binder.forField(prnNoField).asRequired("PRN No can not be blank").bind("prnNo");
 		binder.forField(admissionIdField).asRequired("Admission Id can not be blank").bind("admissionId");
@@ -72,21 +82,23 @@ public class NewStudentComponent extends VerticalLayout {
 		saveButton = new Button("OK", VaadinIcon.CHECK.create());
 		cancelButton = new Button("Cancel", VaadinIcon.CLOSE.create());
 
-		HorizontalLayout buttonBar = buildActionBar();
+		HorizontalLayout buttonBar = new HorizontalLayout();
+		buildButtonBar(buttonBar);
+
 		buttonBar.setWidthFull();
 
-		add(collegeSelect, sessionSelect, prnNoField, admissionIdField, nameField, buttonBar);
+		add(collegeText, sessionSelect, prnNoField, admissionIdField, nameField, buttonBar);
 
 	}
 
-	private void configureCollegeSelect() {
-		collegeSelect.setWidthFull();
-		collegeSelect.setItemLabelGenerator(college -> {
-			return college.getCode() + " - " + college.getName();
-		});
-		collegeSelect.setItems(collegeService.getAllColleges());
-		collegeSelect.setReadOnly(true);
-	}
+//	private void configureCollegeSelect() {
+//		collegeSelect.setWidthFull();
+//		collegeSelect.setItemLabelGenerator(college -> {
+//			return college.getCode() + " - " + college.getName();
+//		});
+//		collegeSelect.setItems(collegeService.getAllColleges());
+//		collegeSelect.setReadOnly(true);
+//	}
 
 	private void configureSessionSelect() {
 		// TODO Auto-generated method stub
@@ -101,19 +113,16 @@ public class NewStudentComponent extends VerticalLayout {
 	}
 
 	public void setStudent(Student student) {
-		College college = VaadinSession.getCurrent().getAttribute(College.class);
-		student.setCollege(college);
+//		College college = VaadinSession.getCurrent().getAttribute(College.class);
+		student.setCollegeId(collegeId);
 		binder.setBean(student);
 	}
 
-	private HorizontalLayout buildActionBar() {
-		HorizontalLayout root = new HorizontalLayout();
+	private void buildButtonBar(HorizontalLayout root) {
 
 		saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		saveButton.addClickListener(e -> {
 			if (binder.validate().isOk()) {
-
-				binder.getBean().setCollegeId(binder.getBean().getCollege().getId());
 				binder.getBean().setSessionId(binder.getBean().getSession().getId());
 
 				fireEvent(new SaveEvent(this, binder.getBean()));
@@ -128,8 +137,6 @@ public class NewStudentComponent extends VerticalLayout {
 
 		root.add(saveButton, blank, cancelButton);
 		root.expand(blank);
-
-		return root;
 	}
 
 	public static abstract class StudentEvent extends ComponentEvent<NewStudentComponent> {

@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -38,7 +37,9 @@ import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinSession;
 
+import in.co.itlabs.minierp.entities.College;
 import in.co.itlabs.minierp.entities.Student;
 import in.co.itlabs.minierp.services.ExecutorService;
 import in.co.itlabs.minierp.services.StudentService;
@@ -52,6 +53,8 @@ public class StudentsExporter extends VerticalLayout {
 
 	@Inject
 	private StudentService studentService;
+
+	private int collegeId = 0;
 
 	private FieldsPicker fieldsPicker;
 
@@ -81,6 +84,11 @@ public class StudentsExporter extends VerticalLayout {
 
 	@PostConstruct
 	public void init() {
+
+		College college = VaadinSession.getCurrent().getAttribute(College.class);
+		if (college != null) {
+			collegeId = college.getId();
+		}
 
 		ui = UI.getCurrent();
 
@@ -230,7 +238,7 @@ public class StudentsExporter extends VerticalLayout {
 				CellStyle dateCellStyle = workbook.createCellStyle();
 				dateCellStyle.setDataFormat(creationHelper.createDataFormat().getFormat("yyyy-MM-dd"));
 
-				List<Student> students = studentService.getStudents(filterParams);
+				List<Student> students = studentService.getStudents(collegeId, filterParams);
 
 				if (students != null) {
 					for (Student student : students) {
@@ -272,7 +280,7 @@ public class StudentsExporter extends VerticalLayout {
 				// xslx
 				// Write the output to a file
 
-				File reportFile = File.createTempFile("sis-", "-students.xlsx", null);
+				File reportFile = File.createTempFile("minierp-", "-students.xlsx", null);
 				reportFile.deleteOnExit();
 
 				FileOutputStream fileOut = new FileOutputStream(reportFile);

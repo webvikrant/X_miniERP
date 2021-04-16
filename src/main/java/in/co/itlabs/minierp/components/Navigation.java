@@ -3,7 +3,6 @@ package in.co.itlabs.minierp.components;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 
 import com.vaadin.cdi.annotation.UIScoped;
@@ -19,6 +18,7 @@ import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.server.VaadinSession;
 
 import in.co.itlabs.minierp.entities.College;
+import in.co.itlabs.minierp.entities.Student;
 import in.co.itlabs.minierp.services.CollegeService;
 
 @UIScoped
@@ -53,7 +53,7 @@ public class Navigation extends HorizontalLayout implements AfterNavigationObser
 		userHLayout.setPadding(true);
 		userHLayout.setSpacing(true);
 		userHLayout.setAlignItems(Alignment.END);
-		
+
 		dashboardButton = new Button("Dashboard", VaadinIcon.DASHBOARD.create());
 		studentsButton = new Button("Students", VaadinIcon.USERS.create());
 		studentDetailsButton = new Button("Student details", VaadinIcon.USER_CARD.create());
@@ -67,7 +67,7 @@ public class Navigation extends HorizontalLayout implements AfterNavigationObser
 		configureButtons();
 
 		menuHLayout.add(dashboardButton, studentsButton, studentDetailsButton);
-		
+
 		userHLayout.add(collegeSelect, userButton, logoutButton);
 
 		Span blank = new Span();
@@ -83,16 +83,19 @@ public class Navigation extends HorizontalLayout implements AfterNavigationObser
 
 		List<College> colleges = collegeService.getAllColleges();
 		collegeSelect.setItems(colleges);
-		
+
 		collegeSelect.setItemLabelGenerator(college -> {
 			return college.getCode() + " - " + college.getName();
 		});
 
+		collegeSelect.setValue(VaadinSession.getCurrent().getAttribute(College.class));
+
 		collegeSelect.addValueChangeListener(e -> {
 			VaadinSession.getCurrent().setAttribute(College.class, e.getValue());
+			VaadinSession.getCurrent().setAttribute(Student.class, null);
+			UI.getCurrent().getPage().reload();
 		});
-		
-		collegeSelect.setValue(colleges.get(0));
+
 	}
 
 	private void configureButtons() {

@@ -27,7 +27,7 @@ public class LoginView extends VerticalLayout {
 		// left is graphic
 		Image image = new Image("https://picsum.photos/800/600", "miniERP");
 //		image.getStyle().set("objectFit", "contain");
-		image.addClassName("photo");
+		image.addClassName("card-photo");
 		image.setWidth("600px");
 
 		// right id form
