@@ -2,6 +2,7 @@ package in.co.itlabs.minierp.views;
 
 import javax.annotation.PostConstruct;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Image;
@@ -53,6 +54,9 @@ public class LoginView extends VerticalLayout {
 
 		Button loginButton = new Button("Login", VaadinIcon.SIGN_IN.create());
 		loginButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+		loginButton.addClickListener(e -> {
+			UI.getCurrent().navigate("students");
+		});
 
 		Button resetPasswordButton = new Button("Reset my password");
 

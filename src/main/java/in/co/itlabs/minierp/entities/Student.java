@@ -14,7 +14,7 @@ public class Student {
 	private String name;
 	private String motherName;
 	private String fatherName;
-	private String guardianName;
+	private String localGuardianName;
 
 	private LocalDate birthDate;
 	private Gender gender;
@@ -52,7 +52,7 @@ public class Student {
 		name = null;
 		motherName = null;
 		fatherName = null;
-		guardianName = null;
+		localGuardianName = null;
 		prnNo = null;
 		admissionId = null;
 		collegeId = 0;

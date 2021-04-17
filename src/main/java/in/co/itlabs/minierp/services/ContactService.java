@@ -10,6 +10,8 @@ import org.sql2o.Sql2o;
 
 import in.co.itlabs.minierp.entities.Address;
 import in.co.itlabs.minierp.entities.Contact;
+import in.co.itlabs.minierp.entities.District;
+import in.co.itlabs.minierp.entities.State;
 
 @ApplicationScoped
 public class ContactService {
@@ -90,7 +92,7 @@ public class ContactService {
 		try (Connection con = sql2o.open()) {
 			id = con.createQuery(sql).addParameter("studentId", address.getStudentId())
 					.addParameter("type", address.getType()).addParameter("districtId", address.getDistrictId())
-					.addParameter("description", address.getDescription()).addParameter("pincode", address.getPinCode())
+					.addParameter("description", address.getDescription()).addParameter("pincode", address.getPincode())
 					.executeUpdate().getKey(Integer.class);
 
 			con.close();
@@ -124,7 +126,7 @@ public class ContactService {
 
 		try (Connection con = sql2o.open()) {
 			con.createQuery(sql).addParameter("id", address.getId()).addParameter("districtId", address.getDistrictId())
-					.addParameter("description", address.getDescription()).addParameter("pincode", address.getPinCode())
+					.addParameter("description", address.getDescription()).addParameter("pincode", address.getPincode())
 					.executeUpdate();
 
 			success = true;
@@ -135,4 +137,50 @@ public class ContactService {
 		return success;
 	}
 
+	
+	// states
+		public List<State> getAllStates() {
+			List<State> states = null;
+
+			Sql2o sql2o = databaseService.getSql2o();
+			String sql = "select * from state order by name";
+
+			try (Connection con = sql2o.open()) {
+				states = con.createQuery(sql).executeAndFetch(State.class);
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
+			return states;
+		}
+		
+		public List<District> getDistricts(int stateId) {
+			List<District> districts = null;
+
+			Sql2o sql2o = databaseService.getSql2o();
+			String sql = "select * from district where stateId = :stateId order by name";
+
+			try (Connection con = sql2o.open()) {
+				districts = con.createQuery(sql).addParameter("stateId", stateId).executeAndFetch(District.class);
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
+			return districts;
+		}
+
+		public District getDistrict(int id) {
+			District district = null;
+
+			Sql2o sql2o = databaseService.getSql2o();
+			String sql = "select * from district where id = :id";
+			String stateSql = "select * from state where id = :id";
+			
+			try (Connection con = sql2o.open()) {
+				district = con.createQuery(sql).addParameter("id", id).executeAndFetchFirst(District.class);
+				State state = con.createQuery(stateSql).addParameter("id", district.getStateId()).executeAndFetchFirst(State.class);
+				district.setState(state);
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
+			return district;
+		}
 }

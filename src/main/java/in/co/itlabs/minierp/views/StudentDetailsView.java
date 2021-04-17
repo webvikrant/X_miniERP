@@ -18,9 +18,12 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
+import in.co.itlabs.minierp.components.StudentAdmissionDetails;
+import in.co.itlabs.minierp.components.StudentContactDetails;
 import in.co.itlabs.minierp.components.StudentInfoCard;
 import in.co.itlabs.minierp.components.StudentMediaDetails;
 import in.co.itlabs.minierp.components.StudentPersonalDetails;
+import in.co.itlabs.minierp.components.StudentQualificationDetails;
 import in.co.itlabs.minierp.entities.College;
 import in.co.itlabs.minierp.entities.Student;
 import in.co.itlabs.minierp.layouts.AppLayout;
@@ -40,6 +43,15 @@ public class StudentDetailsView extends VerticalLayout {
 	private StudentPersonalDetails personalDetails;
 
 	@Inject
+	private StudentContactDetails contactDetails;
+
+	@Inject
+	private StudentAdmissionDetails admissionDetails;
+	
+	@Inject
+	private StudentQualificationDetails qualificationDetails;
+	
+	@Inject
 	private StudentMediaDetails mediaDetails;
 
 	private int collegeId = 0;
@@ -53,6 +65,7 @@ public class StudentDetailsView extends VerticalLayout {
 	private Tab personalTab;
 	private Tab contactTab;
 	private Tab admissionTab;
+	private Tab qualificationTab;
 	private Tab mediaTab;
 	private Tab hostelTab;
 	private Tab scholarshipTab;
@@ -84,6 +97,7 @@ public class StudentDetailsView extends VerticalLayout {
 		personalTab = new Tab("Personal");
 		contactTab = new Tab("Contact");
 		admissionTab = new Tab("Admission");
+		qualificationTab = new Tab("Qualification");
 		mediaTab = new Tab("Media");
 		hostelTab = new Tab("Hostel");
 		scholarshipTab = new Tab("Scholarship");
@@ -169,6 +183,7 @@ public class StudentDetailsView extends VerticalLayout {
 		tabs.add(personalTab);
 		tabs.add(contactTab);
 		tabs.add(admissionTab);
+		tabs.add(qualificationTab);
 		tabs.add(mediaTab);
 		tabs.add(hostelTab);
 		tabs.add(scholarshipTab);
@@ -185,6 +200,28 @@ public class StudentDetailsView extends VerticalLayout {
 					personalDetails.setStudentId(student.getId());
 					currentTab = personalTab;
 				}
+
+			} else if (tab == contactTab) {
+				content.add(contactDetails);
+				if (student != null) {
+					contactDetails.setStudentId(student.getId());
+					currentTab = contactTab;
+				}
+
+			} else if (tab == admissionTab) {
+				content.add(admissionDetails);
+				if (student != null) {
+					admissionDetails.setStudentId(student.getId());
+					currentTab = admissionTab;
+				}
+
+			} else if (tab == qualificationTab) {
+				content.add(qualificationDetails);
+				if (student != null) {
+					qualificationDetails.setStudentId(student.getId());
+					currentTab = qualificationTab;
+				}
+
 			} else if (tab == mediaTab) {
 				content.add(mediaDetails);
 				if (student != null) {
@@ -199,10 +236,10 @@ public class StudentDetailsView extends VerticalLayout {
 	private void handlePersonalDetailsSaveEvent(StudentPersonalDetails.SaveEvent event) {
 		Student student = event.getStudent();
 		boolean success = studentService.updateStudentPersonalDetails(messages, student);
-		if(success) {
+		if (success) {
 			Notification.show("Personal details saved successfully", 3000, Position.TOP_CENTER);
 			reload();
-		}else {
+		} else {
 			Notification.show(messages.toString(), 3000, Position.TOP_CENTER);
 		}
 	}

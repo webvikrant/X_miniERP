@@ -19,13 +19,13 @@ import com.vaadin.flow.server.VaadinSession;
 
 import in.co.itlabs.minierp.entities.College;
 import in.co.itlabs.minierp.entities.Student;
-import in.co.itlabs.minierp.services.CollegeService;
+import in.co.itlabs.minierp.services.AcademicService;
 
 @UIScoped
 public class Navigation extends HorizontalLayout implements AfterNavigationObserver {
 
 	@Inject
-	CollegeService collegeService;
+	AcademicService academicService;
 
 	private HorizontalLayout menuHLayout;
 	private HorizontalLayout userHLayout;
@@ -81,7 +81,7 @@ public class Navigation extends HorizontalLayout implements AfterNavigationObser
 		collegeSelect.setWidth("250px");
 		collegeSelect.setLabel("College");
 
-		List<College> colleges = collegeService.getAllColleges();
+		List<College> colleges = academicService.getAllColleges();
 		collegeSelect.setItems(colleges);
 
 		collegeSelect.setItemLabelGenerator(college -> {

@@ -22,7 +22,7 @@ import com.vaadin.flow.shared.Registration;
 import in.co.itlabs.minierp.entities.College;
 import in.co.itlabs.minierp.entities.Session;
 import in.co.itlabs.minierp.entities.Student;
-import in.co.itlabs.minierp.services.CollegeService;
+import in.co.itlabs.minierp.services.AcademicService;
 
 @UIScoped
 public class NewStudentComponent extends VerticalLayout {
@@ -42,7 +42,7 @@ public class NewStudentComponent extends VerticalLayout {
 	private Binder<Student> binder;
 
 	@Inject
-	private CollegeService collegeService;
+	private AcademicService academicService;
 
 	@PostConstruct
 	public void init() {
@@ -109,7 +109,7 @@ public class NewStudentComponent extends VerticalLayout {
 			return session.getName();
 		});
 
-		sessionSelect.setItems(collegeService.getAllSessions());
+		sessionSelect.setItems(academicService.getAllSessions());
 	}
 
 	public void setStudent(Student student) {

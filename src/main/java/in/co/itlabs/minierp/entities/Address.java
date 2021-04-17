@@ -6,15 +6,19 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class Address {
-	
+
 	public enum Type {
 		PERMANENT, CORRESPONDENCE, LOCAL_GUARDIAN
 	}
-	
+
 	private int id;
 	private int studentId;
 	private Type type;
 	private int districtId;
 	private String description;
-	private String pinCode;
+	private String pincode;
+
+	// transient
+	private District district;
+	private State state;
 }

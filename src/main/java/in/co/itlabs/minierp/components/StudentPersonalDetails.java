@@ -59,7 +59,7 @@ public class StudentPersonalDetails extends VerticalLayout {
 
 	private TextField motherNameField;
 	private TextField fatherNameField;
-	private TextField guardianNameField;
+	private TextField localGuardianNameField;
 
 	private ComboBox<Religion> religionCombo;
 	private ComboBox<Caste> casteCombo;
@@ -109,7 +109,7 @@ public class StudentPersonalDetails extends VerticalLayout {
 		fatherNameField = new TextField();
 		configureFatherNameField();
 
-		guardianNameField = new TextField();
+		localGuardianNameField = new TextField();
 		configureGuardianNameField();
 
 		relationCombo = new ComboBox<Relation>();
@@ -132,7 +132,7 @@ public class StudentPersonalDetails extends VerticalLayout {
 		binder.forField(nameField).asRequired("Name can not be blank").bind("name");
 		binder.forField(motherNameField).asRequired("Mother name can not be blank").bind("motherName");
 		binder.forField(fatherNameField).asRequired("Father name can not be blank").bind("fatherName");
-		binder.forField(guardianNameField).asRequired("Guardian name can not be blank").bind("guardianName");
+		binder.forField(localGuardianNameField).asRequired("Local guardian name can not be blank").bind("localGuardianName");
 
 		HorizontalLayout buttonBar = new HorizontalLayout();
 		buildButtonBar(buttonBar);
@@ -160,7 +160,7 @@ public class StudentPersonalDetails extends VerticalLayout {
 		flex3.add(religionCombo, casteCombo, categoryCombo);
 		flex4.add(motherNameField, motherOccupationCombo);
 		flex5.add(fatherNameField, fatherOccupationCombo);
-		flex6.add(guardianNameField, relationCombo);
+		flex6.add(localGuardianNameField, relationCombo);
 
 		add(editCheck, buttonBar, flex1, flex2, flex3, flex4, flex5, flex6);
 		setAlignSelf(Alignment.CENTER, buttonBar);
@@ -241,8 +241,8 @@ public class StudentPersonalDetails extends VerticalLayout {
 	}
 
 	private void configureGuardianNameField() {
-		guardianNameField.setLabel("Guardian's name");
-		guardianNameField.setWidth("200px");
+		localGuardianNameField.setLabel("Guardian's name");
+		localGuardianNameField.setWidth("200px");
 	}
 
 	private void configureFatherNameField() {
