@@ -15,7 +15,6 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap;
@@ -29,8 +28,6 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 
-import in.co.itlabs.minierp.components.NewStudentComponent.CancelEvent;
-import in.co.itlabs.minierp.components.NewStudentComponent.SaveEvent;
 import in.co.itlabs.minierp.entities.Caste;
 import in.co.itlabs.minierp.entities.Category;
 import in.co.itlabs.minierp.entities.Media;
@@ -130,6 +127,8 @@ public class StudentPersonalDetails extends VerticalLayout {
 		binder = new Binder<>(Student.class);
 
 //		binder.forField(collegeSelect).asRequired("College can not be blank").bind("college");
+		binder.forField(photographSelect).bind("photographMedia");
+		binder.forField(signatureSelect).bind("signatureMedia");
 		binder.forField(nameField).asRequired("Name can not be blank").bind("name");
 		binder.forField(motherNameField).asRequired("Mother name can not be blank").bind("motherName");
 		binder.forField(fatherNameField).asRequired("Father name can not be blank").bind("fatherName");
@@ -283,8 +282,16 @@ public class StudentPersonalDetails extends VerticalLayout {
 		saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		saveButton.addClickListener(e -> {
 			if (binder.validate().isOk()) {
-				binder.getBean().setPhotographMediaId(binder.getBean().getPhotographMedia().getId());
-				binder.getBean().setSignatureMediaId(binder.getBean().getSignatureMedia().getId());
+				Media photographMedia = binder.getBean().getPhotographMedia();
+				Media signatureMedia = binder.getBean().getSignatureMedia();
+				
+				if(photographMedia!=null) {
+					binder.getBean().setPhotographMediaId(photographMedia.getId());	
+				}
+				if(signatureMedia!=null) {
+					binder.getBean().setSignatureMediaId(signatureMedia.getId());	
+				}
+
 				fireEvent(new SaveEvent(this, binder.getBean()));
 			}
 		});

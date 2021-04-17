@@ -1,4 +1,4 @@
-                      package in.co.itlabs.minierp.components;
+package in.co.itlabs.minierp.components;
 
 import java.io.ByteArrayInputStream;
 
@@ -36,7 +36,7 @@ public class MediaEditor extends VerticalLayout implements Editor {
 
 		remarkField = new TextField("Remark");
 		remarkField.setWidthFull();
-		
+
 		configureRemarkField();
 
 		binder = new Binder<>(Media.class);
@@ -76,7 +76,7 @@ public class MediaEditor extends VerticalLayout implements Editor {
 		// are we creating a new mdeia file or editing an existing one
 		if (media.getId() == 0) {
 			// new media file
-
+			// do nothing
 		} else {
 			// existing media file
 			byte[] fileBytes = media.getFileBytes();

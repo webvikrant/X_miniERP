@@ -10,6 +10,9 @@ import org.slf4j.LoggerFactory;
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
 
+import in.co.itlabs.minierp.entities.Address;
+import in.co.itlabs.minierp.entities.Contact;
+import in.co.itlabs.minierp.entities.Contact.Type;
 import in.co.itlabs.minierp.entities.Student;
 import in.co.itlabs.minierp.util.StudentFilterParams;
 import in.co.itlabs.minierp.util.StudentFilterParams.FilterType;
@@ -24,23 +27,48 @@ public class StudentService {
 
 	// create
 	public int createStudent(List<String> messages, Student student) {
-		int id = 0;
+		int newId = 0;
 		Sql2o sql2o = databaseService.getSql2o();
 		String sql = "insert into student (collegeId, sessionId, prnNo, admissionId, name)"
 				+ " values(:collegeId, :sessionId, :prnNo, :admissionId, :name)";
 
-		try (Connection con = sql2o.open()) {
-			id = con.createQuery(sql).addParameter("collegeId", student.getCollegeId())
+		// insert multiple records into contact table and address table
+		String contactSql = "insert into contact (studentId, type) values(:studentId, :type)";
+
+		String addressSql = "insert into address (studentId, type) values(:studentId, :type)";
+
+		try (Connection con = sql2o.beginTransaction()) {
+			int id = con.createQuery(sql).addParameter("collegeId", student.getCollegeId())
 					.addParameter("sessionId", student.getSessionId()).addParameter("prnNo", student.getPrnNo())
 					.addParameter("admissionId", student.getAdmissionId()).addParameter("name", student.getName())
 					.executeUpdate().getKey(Integer.class);
 
-			con.close();
+			// insert 4 contacts
+			con.createQuery(contactSql).addParameter("studentId", id).addParameter("type", Type.STUDENT)
+					.executeUpdate();
+			con.createQuery(contactSql).addParameter("studentId", id).addParameter("type", Contact.Type.MOTHER)
+					.executeUpdate();
+			con.createQuery(contactSql).addParameter("studentId", id).addParameter("type", Contact.Type.FATHER)
+					.executeUpdate();
+			con.createQuery(contactSql).addParameter("studentId", id).addParameter("type", Contact.Type.LOCAL_GUARDIAN)
+					.executeUpdate();
+
+			// insert 3 addresses
+			con.createQuery(addressSql).addParameter("studentId", id).addParameter("type", Address.Type.PERMANENT)
+					.executeUpdate();
+			con.createQuery(addressSql).addParameter("studentId", id).addParameter("type", Address.Type.CORRESPONDENCE)
+					.executeUpdate();
+			con.createQuery(addressSql).addParameter("studentId", id).addParameter("type", Address.Type.LOCAL_GUARDIAN)
+					.executeUpdate();
+
+			con.commit();
+			
+			newId = id;
 		} catch (Exception e) {
-			logger.debug(student.toString());
+			logger.debug(e.getMessage());
 			messages.add(e.getMessage());
 		}
-		return id;
+		return newId;
 	}
 
 	// read one
