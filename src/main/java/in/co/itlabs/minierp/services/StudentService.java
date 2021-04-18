@@ -210,17 +210,23 @@ public class StudentService {
 	private void insertStudentSessionInfo(List<String> messages, StudentSessionInfo studentSessionInfo,
 			Connection con) {
 
-		String insertInfoSql = "insert into student_session_info(studentId, sessionId, programId, semester, semesterStatus, hostel, scholarship)"
-				+ " values(:studentId, :sessionId, :programId, :semester, :semesterStatus, :hostel, :scholarship) ";
+		String insertInfoSql = "insert into student_session_info(studentId, sessionId, latest, programId, semester, semesterStatus, hostel, scholarship)"
+				+ " values(:studentId, :sessionId, :latest, :programId, :semester, :semesterStatus, :hostel, :scholarship) ";
+
+		String updateLatestFalseSql = "update student_session_info set latest = false where studentId = :studentId";
+
+		con.createQuery(updateLatestFalseSql).addParameter("studentId", studentSessionInfo.getStudentId())
+				.executeUpdate();
 
 		// insert new record
 		con.createQuery(insertInfoSql).addParameter("studentId", studentSessionInfo.getStudentId())
-				.addParameter("sessionId", studentSessionInfo.getSessionId())
+				.addParameter("sessionId", studentSessionInfo.getSessionId()).addParameter("latest", true)
 				.addParameter("programId", studentSessionInfo.getProgramId())
 				.addParameter("semester", studentSessionInfo.getSemester())
 				.addParameter("semesterStatus", studentSessionInfo.getSemesterStatus())
 				.addParameter("hostel", studentSessionInfo.isHostel())
 				.addParameter("scholarship", studentSessionInfo.isScholarship()).executeUpdate();
+
 	}
 
 	// update current session info

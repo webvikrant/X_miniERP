@@ -15,6 +15,8 @@ public class StudentSessionInfo {
 	private int studentId;
 	
 	private int sessionId;
+	private boolean latest;
+
 	private int programId;
 
 	private Semester semester;
