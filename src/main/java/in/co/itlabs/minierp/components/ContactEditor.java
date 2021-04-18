@@ -114,10 +114,10 @@ public class ContactEditor extends VerticalLayout implements Editor {
 
 	}
 
-	public static abstract class ContactEvent extends ComponentEvent<ContactEditor> {
+	public static abstract class ContactEditorEvent extends ComponentEvent<ContactEditor> {
 		private Contact contact;
 
-		protected ContactEvent(ContactEditor source, Contact contact) {
+		protected ContactEditorEvent(ContactEditor source, Contact contact) {
 
 			super(source, false);
 			this.contact = contact;
@@ -128,13 +128,13 @@ public class ContactEditor extends VerticalLayout implements Editor {
 		}
 	}
 
-	public static class SaveEvent extends ContactEvent {
+	public static class SaveEvent extends ContactEditorEvent {
 		SaveEvent(ContactEditor source, Contact contact) {
 			super(source, contact);
 		}
 	}
 
-	public static class CancelEvent extends ContactEvent {
+	public static class CancelEvent extends ContactEditorEvent {
 		CancelEvent(ContactEditor source, Contact contact) {
 			super(source, contact);
 		}

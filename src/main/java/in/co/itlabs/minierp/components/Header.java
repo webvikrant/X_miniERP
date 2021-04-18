@@ -3,15 +3,11 @@ package in.co.itlabs.minierp.components;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import javax.annotation.PostConstruct;
-
-import com.vaadin.cdi.annotation.UIScoped;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
-@UIScoped
 public class Header extends HorizontalLayout {
 
 	private Icon icon;
@@ -19,8 +15,7 @@ public class Header extends HorizontalLayout {
 	private Span blank;
 	private Span date;
 
-	@PostConstruct
-	public void init() {
+	public Header() {
 		setJustifyContentMode(JustifyContentMode.BETWEEN);
 		setAlignItems(Alignment.CENTER);
 

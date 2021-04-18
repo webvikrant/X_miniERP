@@ -3,16 +3,11 @@ package in.co.itlabs.minierp.components;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
-import com.vaadin.cdi.annotation.UIScoped;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
@@ -28,32 +23,33 @@ import in.co.itlabs.minierp.entities.Student;
 import in.co.itlabs.minierp.services.ContactService;
 import in.co.itlabs.minierp.services.StudentService;
 
-@UIScoped
 public class StudentContactDetails extends VerticalLayout {
 
-	@Inject
-	private ContactService contactService;
-
-	@Inject
-	private StudentService studentService;
-
-	@Inject
-	private ContactEditor contactEditor;
-
-	@Inject
-	private AddressEditor addressEditor;
-
-	private int studentId;
+	// ui
 
 	private Grid<Contact> contactGrid = new Grid<>(Contact.class);
 	private Grid<Address> addressGrid = new Grid<>(Address.class);
 
+	private ContactEditor contactEditor;
+	private AddressEditor addressEditor;
+
 	private Dialog dialog = new Dialog();
+	
+	// non-ui
+
+	private ContactService contactService;
+	private StudentService studentService;
+
+	private int studentId;
 	private List<String> messages = new ArrayList<String>();
 
-	@PostConstruct
-	public void init() {
+	public StudentContactDetails(StudentService studentService, ContactService contactService) {
+		this.studentService = studentService;
+		this.contactService = contactService;
 
+		contactEditor = new ContactEditor();
+		addressEditor = new AddressEditor(contactService);
+		
 		contactEditor.addListener(ContactEditor.SaveEvent.class, this::handleContactSaveEvent);
 		contactEditor.addListener(ContactEditor.CancelEvent.class, this::handleContactCancelEvent);
 

@@ -1,15 +1,10 @@
 package in.co.itlabs.minierp.views;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.tabs.Tab;
@@ -24,39 +19,30 @@ import in.co.itlabs.minierp.components.StudentInfoCard;
 import in.co.itlabs.minierp.components.StudentMediaDetails;
 import in.co.itlabs.minierp.components.StudentPersonalDetails;
 import in.co.itlabs.minierp.components.StudentQualificationDetails;
+import in.co.itlabs.minierp.components.StudentSessionDetails;
 import in.co.itlabs.minierp.entities.College;
 import in.co.itlabs.minierp.entities.Student;
 import in.co.itlabs.minierp.layouts.AppLayout;
+import in.co.itlabs.minierp.services.AcademicService;
+import in.co.itlabs.minierp.services.ContactService;
+import in.co.itlabs.minierp.services.MediaService;
+import in.co.itlabs.minierp.services.QualificationService;
 import in.co.itlabs.minierp.services.StudentService;
 
 @PageTitle(value = "Student details")
 @Route(value = "student-details", layout = AppLayout.class)
 public class StudentDetailsView extends VerticalLayout {
 
-	@Inject
-	private StudentService studentService;
+	// ui
 
-	@Inject
 	private StudentInfoCard studentInfoCard;
 
-	@Inject
 	private StudentPersonalDetails personalDetails;
-
-	@Inject
 	private StudentContactDetails contactDetails;
-
-	@Inject
 	private StudentAdmissionDetails admissionDetails;
-	
-	@Inject
 	private StudentQualificationDetails qualificationDetails;
-	
-	@Inject
 	private StudentMediaDetails mediaDetails;
-
-	private int collegeId = 0;
-//	private int studentId = 0;
-	private Tab currentTab = null;
+	private StudentSessionDetails sessionDetails;
 
 	private ComboBox<Student> studentCombo;
 	private SplitLayout splitLayout;
@@ -67,14 +53,31 @@ public class StudentDetailsView extends VerticalLayout {
 	private Tab admissionTab;
 	private Tab qualificationTab;
 	private Tab mediaTab;
-	private Tab hostelTab;
-	private Tab scholarshipTab;
+	private Tab sessionTab;
 	private Tab marksTab;
 	private Tab formatsTab;
 
 	private VerticalLayout content;
+	private Tab currentTab = null;
 
-	private final List<String> messages = new ArrayList<>();
+	// non-ui
+
+	@Inject
+	private StudentService studentService;
+
+	@Inject
+	private ContactService contactService;
+
+	@Inject
+	private AcademicService academicService;
+
+	@Inject
+	private QualificationService qualificationService;
+
+	@Inject
+	private MediaService mediaService;
+
+	private int collegeId = 0;
 
 	@PostConstruct
 	public void init() {
@@ -93,20 +96,19 @@ public class StudentDetailsView extends VerticalLayout {
 		studentCombo = new ComboBox<Student>();
 		configureCombo(studentCombo);
 
+		studentInfoCard = new StudentInfoCard(studentService);
+
 		tabs = new Tabs();
 		personalTab = new Tab("Personal");
 		contactTab = new Tab("Contact");
 		admissionTab = new Tab("Admission");
 		qualificationTab = new Tab("Qualification");
 		mediaTab = new Tab("Media");
-		hostelTab = new Tab("Hostel");
-		scholarshipTab = new Tab("Scholarship");
+		sessionTab = new Tab("Sessions");
 		marksTab = new Tab("Marks");
 		formatsTab = new Tab("Formats");
 
 		content = new VerticalLayout();
-
-		personalDetails.addListener(StudentPersonalDetails.SaveEvent.class, this::handlePersonalDetailsSaveEvent);
 
 		configureTabs();
 
@@ -185,8 +187,7 @@ public class StudentDetailsView extends VerticalLayout {
 		tabs.add(admissionTab);
 		tabs.add(qualificationTab);
 		tabs.add(mediaTab);
-		tabs.add(hostelTab);
-		tabs.add(scholarshipTab);
+		tabs.add(sessionTab);
 		tabs.add(marksTab);
 		tabs.add(formatsTab);
 
@@ -195,6 +196,11 @@ public class StudentDetailsView extends VerticalLayout {
 			Student student = VaadinSession.getCurrent().getAttribute(Student.class);
 			Tab tab = event.getSelectedTab();
 			if (tab == personalTab) {
+				if (personalDetails == null) {
+					personalDetails = new StudentPersonalDetails(studentService, mediaService);
+					personalDetails.addListener(StudentPersonalDetails.RefreshEvent.class,
+							this::handlePersonalDetailsRefreshEvent);
+				}
 				content.add(personalDetails);
 				if (student != null) {
 					personalDetails.setStudentId(student.getId());
@@ -202,6 +208,9 @@ public class StudentDetailsView extends VerticalLayout {
 				}
 
 			} else if (tab == contactTab) {
+				if (contactDetails == null) {
+					contactDetails = new StudentContactDetails(studentService, contactService);
+				}
 				content.add(contactDetails);
 				if (student != null) {
 					contactDetails.setStudentId(student.getId());
@@ -209,6 +218,10 @@ public class StudentDetailsView extends VerticalLayout {
 				}
 
 			} else if (tab == admissionTab) {
+				if (admissionDetails == null) {
+					admissionDetails = new StudentAdmissionDetails(studentService, academicService);
+				}
+
 				content.add(admissionDetails);
 				if (student != null) {
 					admissionDetails.setStudentId(student.getId());
@@ -216,6 +229,11 @@ public class StudentDetailsView extends VerticalLayout {
 				}
 
 			} else if (tab == qualificationTab) {
+				if (qualificationDetails == null) {
+					qualificationDetails = new StudentQualificationDetails(studentService, qualificationService,
+							academicService);
+				}
+
 				content.add(qualificationDetails);
 				if (student != null) {
 					qualificationDetails.setStudentId(student.getId());
@@ -223,24 +241,31 @@ public class StudentDetailsView extends VerticalLayout {
 				}
 
 			} else if (tab == mediaTab) {
+				if (mediaDetails == null) {
+					mediaDetails = new StudentMediaDetails(mediaService);
+				}
 				content.add(mediaDetails);
 				if (student != null) {
 					mediaDetails.setStudentId(student.getId());
 					currentTab = mediaTab;
 				}
 
+			} else if (tab == sessionTab) {
+				if (sessionDetails == null) {
+					sessionDetails = new StudentSessionDetails(studentService, academicService);
+				}
+				content.add(sessionDetails);
+				if (student != null) {
+					sessionDetails.setStudentId(student.getId());
+					currentTab = sessionTab;
+				}
+
 			}
 		});
 	}
 
-	private void handlePersonalDetailsSaveEvent(StudentPersonalDetails.SaveEvent event) {
+	private void handlePersonalDetailsRefreshEvent(StudentPersonalDetails.RefreshEvent event) {
 		Student student = event.getStudent();
-		boolean success = studentService.updateStudentPersonalDetails(messages, student);
-		if (success) {
-			Notification.show("Personal details saved successfully", 3000, Position.TOP_CENTER);
-			reload();
-		} else {
-			Notification.show(messages.toString(), 3000, Position.TOP_CENTER);
-		}
+		studentInfoCard.setStudentId(student.getId());
 	}
 }

@@ -128,10 +128,10 @@ public class MediaEditor extends VerticalLayout implements Editor {
 
 	}
 
-	public static abstract class MediaEvent extends ComponentEvent<MediaEditor> {
+	public static abstract class MediaEditorEvent extends ComponentEvent<MediaEditor> {
 		private Media media;
 
-		protected MediaEvent(MediaEditor source, Media media) {
+		protected MediaEditorEvent(MediaEditor source, Media media) {
 
 			super(source, false);
 			this.media = media;
@@ -142,13 +142,13 @@ public class MediaEditor extends VerticalLayout implements Editor {
 		}
 	}
 
-	public static class SaveEvent extends MediaEvent {
+	public static class SaveEvent extends MediaEditorEvent {
 		SaveEvent(MediaEditor source, Media media) {
 			super(source, media);
 		}
 	}
 
-	public static class CancelEvent extends MediaEvent {
+	public static class CancelEvent extends MediaEditorEvent {
 		CancelEvent(MediaEditor source, Media media) {
 			super(source, media);
 		}

@@ -1,9 +1,5 @@
 package in.co.itlabs.minierp.components;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
-import com.vaadin.cdi.annotation.UIScoped;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
@@ -28,8 +24,9 @@ import in.co.itlabs.minierp.entities.School;
 import in.co.itlabs.minierp.services.AcademicService;
 import in.co.itlabs.minierp.util.Editor;
 
-@UIScoped
 public class QualificationEditor extends VerticalLayout implements Editor {
+
+	// ui
 
 	private ComboBox<Level> levelCombo;
 	private ComboBox<Exam> examCombo;
@@ -46,11 +43,12 @@ public class QualificationEditor extends VerticalLayout implements Editor {
 
 	private Binder<Qualification> binder;
 
-	@Inject
+	// non-ui
+
 	private AcademicService academicService;
 
-	@PostConstruct
-	public void init() {
+	public QualificationEditor(AcademicService academicService) {
+		this.academicService = academicService;
 
 		levelCombo = new ComboBox<Level>("Level");
 		configureLevelCombo();
@@ -196,8 +194,7 @@ public class QualificationEditor extends VerticalLayout implements Editor {
 	public static abstract class QualificationEvent extends ComponentEvent<QualificationEditor> {
 		private Qualification qualification;
 
-		protected QualificationEvent(QualificationEditor source,
-				Qualification qualification) {
+		protected QualificationEvent(QualificationEditor source, Qualification qualification) {
 
 			super(source, false);
 			this.qualification = qualification;

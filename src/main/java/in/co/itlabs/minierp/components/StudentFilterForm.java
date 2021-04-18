@@ -1,8 +1,5 @@
 package in.co.itlabs.minierp.components;
 
-import javax.annotation.PostConstruct;
-
-import com.vaadin.cdi.annotation.UIScoped;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
@@ -19,8 +16,7 @@ import com.vaadin.flow.shared.Registration;
 import in.co.itlabs.minierp.util.StudentFilterParams;
 import in.co.itlabs.minierp.util.StudentFilterParams.FilterType;
 
-@UIScoped
-public class StudentFilterComponent extends VerticalLayout {
+public class StudentFilterForm extends VerticalLayout {
 
 	private Select<StudentFilterParams.FilterType> searchTypeSelect;
 	private VerticalLayout content;
@@ -31,8 +27,7 @@ public class StudentFilterComponent extends VerticalLayout {
 
 	private Binder<StudentFilterParams> binder;
 
-	@PostConstruct
-	public void init() {
+	public StudentFilterForm() {
 
 		content = new VerticalLayout();
 		content.addClassName("card");
@@ -113,10 +108,10 @@ public class StudentFilterComponent extends VerticalLayout {
 		binder.setBean(searchParams);
 	}
 
-	public static abstract class SearchEvent extends ComponentEvent<StudentFilterComponent> {
+	public static abstract class SearchEvent extends ComponentEvent<StudentFilterForm> {
 		private StudentFilterParams searchParams;
 
-		protected SearchEvent(StudentFilterComponent source, StudentFilterParams searchParams) {
+		protected SearchEvent(StudentFilterForm source, StudentFilterParams searchParams) {
 
 			super(source, false);
 			this.searchParams = searchParams;
@@ -128,7 +123,7 @@ public class StudentFilterComponent extends VerticalLayout {
 	}
 
 	public static class StudentFilterEvent extends SearchEvent {
-		StudentFilterEvent(StudentFilterComponent source, StudentFilterParams searchParams) {
+		StudentFilterEvent(StudentFilterForm source, StudentFilterParams searchParams) {
 			super(source, searchParams);
 		}
 	}

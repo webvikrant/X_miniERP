@@ -2,9 +2,12 @@ package in.co.itlabs.minierp.entities;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import in.co.itlabs.minierp.util.Gender;
+import in.co.itlabs.minierp.util.Semester;
+import in.co.itlabs.minierp.util.StudentStatus;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -28,16 +31,34 @@ public class Student {
 	private LocalDate admissionDate;
 
 	private BigDecimal interEnglishPercent;
-	
-	// foreign keys
+
+	private StudentStatus studentStatus;
+
 	private int collegeId;
-	private int sessionId;
+
+	private int admissionSessionId;
+	private int admissionProgramId;
+	private Semester admissionSemester;
+
+	private boolean lateralEntry;
+	private boolean feeWaiver;
+	private boolean kashmiriMigrant;
+	private boolean pmsss;
+
+	private boolean hostel;
+	private boolean scholarship;
+
 	private int photographMediaId;
 	private int signatureMediaId;
 
+	private int currentSessionInfoId;
+
 	// transient
-//	private College college;
-	private Session session;
+	private Session admissionSession;
+	private Program admissionProgram;
+
+	private StudentSessionInfo currentSessionInfo;
+
 	private Media photographMedia;
 	private Media signatureMedia;
 
@@ -47,7 +68,11 @@ public class Student {
 	public static final String ADMISSION_ID = "admissionId";
 
 	public static List<String> getFields() {
-		return List.of(ID, NAME, ADMISSION_ID);
+		List<String> fields = new ArrayList<String>();
+		fields.add(ID);
+		fields.add(ADMISSION_ID);
+		fields.add(NAME);
+		return fields;
 	}
 
 	public void clear() {
@@ -59,8 +84,8 @@ public class Student {
 		prnNo = null;
 		admissionId = null;
 		collegeId = 0;
-		sessionId = 0;
 		photographMediaId = 0;
 		signatureMediaId = 0;
+
 	}
 }

@@ -5,10 +5,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
-import com.vaadin.cdi.annotation.UIScoped;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -27,27 +23,28 @@ import com.vaadin.flow.server.StreamResource;
 import in.co.itlabs.minierp.entities.Media;
 import in.co.itlabs.minierp.services.MediaService;
 
-@UIScoped
 public class StudentMediaDetails extends VerticalLayout {
 
-	@Inject
-	private MediaService mediaService;
-
-	@Inject
-	private MediaEditor mediaEditor;
-	private Media media;
-
-	private int studentId;
+	// ui
 
 	private Grid<Media> grid = new Grid<>(Media.class);
 	private final Div resultCount = new Div();
 
 	private Dialog dialog = new Dialog();
+	private MediaEditor mediaEditor;
+
+	// non-ui
+	
+	private MediaService mediaService;
+	
 	private List<String> messages = new ArrayList<String>();
+	private int studentId;
+	private Media media;
 
-	@PostConstruct
-	public void init() {
+	public StudentMediaDetails(MediaService mediaService) {
+		this.mediaService = mediaService;
 
+		mediaEditor = new MediaEditor();
 		mediaEditor.addListener(MediaEditor.SaveEvent.class, this::handleSaveEvent);
 		mediaEditor.addListener(MediaEditor.CancelEvent.class, this::handleCancelEvent);
 
@@ -96,18 +93,18 @@ public class StudentMediaDetails extends VerticalLayout {
 
 		grid.addComponentColumn(media -> {
 			Anchor downloadLink = new Anchor();
-			
+
 			byte[] imageBytes = media.getFileBytes();
 			StreamResource resource = new StreamResource(media.getFileName(),
 					() -> new ByteArrayInputStream(imageBytes));
-			
+
 			downloadLink.setText(media.getFileName());
 			downloadLink.setHref(resource);
 			downloadLink.setTarget("_blank");
 			downloadLink.getElement().setAttribute("download", true);
-			
+
 			return downloadLink;
-			
+
 		}).setHeader("File").setWidth("150px");
 
 		grid.addColumn("remark").setHeader("Remark").setWidth("50px");

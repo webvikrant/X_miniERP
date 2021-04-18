@@ -1,8 +1,5 @@
 package in.co.itlabs.minierp.components;
 
-import javax.annotation.PostConstruct;
-
-import com.vaadin.cdi.annotation.UIScoped;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Anchor;
@@ -11,7 +8,6 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
-@UIScoped
 public class Footer extends HorizontalLayout {
 
 	private Icon copyrightIcon;
@@ -19,8 +15,7 @@ public class Footer extends HorizontalLayout {
 	private Button button;
 	private Span email = new Span("webvikrant@gmail.com");
 
-	@PostConstruct
-	public void init() {
+	public Footer() {
 		setMargin(false);
 		setPadding(false);
 		setSpacing(false);

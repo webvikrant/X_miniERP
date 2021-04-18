@@ -1,26 +1,24 @@
 package in.co.itlabs.minierp.components;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
-import com.vaadin.cdi.annotation.UIScoped;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 
 import in.co.itlabs.minierp.entities.Student;
 import in.co.itlabs.minierp.services.StudentService;
 
-@UIScoped
 public class StudentInfoCard extends VerticalLayout {
 
-	@Inject
-	private StudentService studentService;
+	// ui
 
 	private TextField nameField;
 	private TextField admissionIdField;
 
-	@PostConstruct
-	public void init() {
+	// non-ui
+
+	private StudentService studentService;
+
+	public StudentInfoCard(StudentService studentService) {
+		this.studentService = studentService;
 
 		nameField = new TextField("Name");
 		nameField.setReadOnly(true);

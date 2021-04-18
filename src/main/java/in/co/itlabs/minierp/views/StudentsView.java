@@ -1,6 +1,7 @@
 package in.co.itlabs.minierp.views;
 
 import java.util.ArrayList;
+
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -23,12 +24,13 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
-import in.co.itlabs.minierp.components.NewStudentComponent;
-import in.co.itlabs.minierp.components.StudentFilterComponent;
+import in.co.itlabs.minierp.components.NewStudentForm;
+import in.co.itlabs.minierp.components.StudentFilterForm;
 import in.co.itlabs.minierp.components.StudentsExporter;
 import in.co.itlabs.minierp.entities.College;
 import in.co.itlabs.minierp.entities.Student;
 import in.co.itlabs.minierp.layouts.AppLayout;
+import in.co.itlabs.minierp.services.AcademicService;
 import in.co.itlabs.minierp.services.StudentService;
 import in.co.itlabs.minierp.util.StudentReport;
 import in.co.itlabs.minierp.util.StudentFilterParams;
@@ -38,26 +40,25 @@ import in.co.itlabs.minierp.util.StudentFilterParams.FilterType;
 @Route(value = "students", layout = AppLayout.class)
 public class StudentsView extends VerticalLayout {
 
+	// ui
+	
+	private StudentFilterForm filterForm;
+	private NewStudentForm newStudentForm;
+	private StudentsExporter exporter;
+	private Grid<Student> grid;
+	private Div resultCount;
+	private Dialog dialog;
+	
+	// non-ui
+	
 	@Inject
 	private StudentService studentService;
-
+	
 	@Inject
-	private StudentFilterComponent filterComponent;
-
-	@Inject
-	private NewStudentComponent newStudentComponent;
-
-	@Inject
-	private StudentsExporter exporter;
+	private AcademicService academicService;
 
 	private int collegeId = 0;
-
-	private Grid<Student> grid = new Grid<>(Student.class);
-	private final Div resultCount = new Div();
-
-	private StudentFilterParams filterParams = new StudentFilterParams();
-
-	private Dialog dialog = new Dialog();
+	private StudentFilterParams filterParams;
 
 	@PostConstruct
 	public void init() {
@@ -73,19 +74,26 @@ public class StudentsView extends VerticalLayout {
 		Div titleDiv = new Div();
 		buildTitle(titleDiv);
 
+		dialog = new Dialog();
 		dialog.setModal(true);
 		dialog.setDraggable(true);
 
-		newStudentComponent.setStudent(new Student());
-		newStudentComponent.addListener(NewStudentComponent.SaveEvent.class, this::handleNewStudentSaveEvent);
-		newStudentComponent.addListener(NewStudentComponent.CancelEvent.class, this::handleNewStudentCancelEvent);
+		newStudentForm = new NewStudentForm(academicService);
+		newStudentForm.setStudent(new Student());
+		newStudentForm.addListener(NewStudentForm.SaveEvent.class, this::handleNewStudentSaveEvent);
+		newStudentForm.addListener(NewStudentForm.CancelEvent.class, this::handleNewStudentCancelEvent);
 
+		filterParams = new StudentFilterParams();
 		filterParams.setFilterType(FilterType.BASIC);
 
-		filterComponent.setFilterParams(filterParams);
-		filterComponent.addListener(StudentFilterComponent.StudentFilterEvent.class, this::handleFilterEvent);
+		filterForm = new StudentFilterForm();
+		filterForm.setFilterParams(filterParams);
+		filterForm.addListener(StudentFilterForm.StudentFilterEvent.class, this::handleFilterEvent);
+		
+		resultCount = new Div();
 		resultCount.addClassName("small-text");
 
+		grid = new Grid<>(Student.class);
 		configureGrid();
 
 		HorizontalLayout toolBar = new HorizontalLayout();
@@ -98,7 +106,7 @@ public class StudentsView extends VerticalLayout {
 		SplitLayout splitLayout = new SplitLayout();
 		splitLayout.setWidthFull();
 		splitLayout.setSplitterPosition(25);
-		splitLayout.addToPrimary(filterComponent);
+		splitLayout.addToPrimary(filterForm);
 		splitLayout.addToSecondary(main);
 
 		add(titleDiv, splitLayout);
@@ -150,7 +158,7 @@ public class StudentsView extends VerticalLayout {
 			dialog.setWidth("400px");
 			dialog.removeAll();
 			dialog.open();
-			dialog.add(newStudentComponent);
+			dialog.add(newStudentForm);
 		});
 
 		Button importButton = new Button("Import", VaadinIcon.ARROW_BACKWARD.create());
@@ -166,27 +174,28 @@ public class StudentsView extends VerticalLayout {
 		root.add("Students");
 	}
 
-	public void handleFilterEvent(StudentFilterComponent.StudentFilterEvent event) {
+	public void handleFilterEvent(StudentFilterForm.StudentFilterEvent event) {
 		filterParams = event.getFilterParams();
 		exporter.setStudentFilterParams(filterParams);
 		reload();
 	}
 
-	public void handleNewStudentSaveEvent(NewStudentComponent.SaveEvent event) {
+	public void handleNewStudentSaveEvent(NewStudentForm.SaveEvent event) {
 		List<String> messages = new ArrayList<String>();
 		Student student = event.getStudent();
+		
 		int studentId = studentService.createStudent(messages, student);
 		if (studentId > 0) {
 			Notification.show("Student created successfully", 3000, Position.TOP_CENTER);
 			reload();
 			student.clear();
-			newStudentComponent.setStudent(student);
+			newStudentForm.setStudent(student);
 		} else {
 			Notification.show(messages.toString(), 3000, Position.TOP_CENTER);
 		}
 	}
 
-	public void handleNewStudentCancelEvent(NewStudentComponent.CancelEvent event) {
+	public void handleNewStudentCancelEvent(NewStudentForm.CancelEvent event) {
 		dialog.close();
 	}
 

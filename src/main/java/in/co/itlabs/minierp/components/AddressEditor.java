@@ -1,9 +1,5 @@
 package in.co.itlabs.minierp.components;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
-import com.vaadin.cdi.annotation.UIScoped;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
@@ -25,12 +21,10 @@ import in.co.itlabs.minierp.entities.State;
 import in.co.itlabs.minierp.services.ContactService;
 import in.co.itlabs.minierp.util.Editor;
 
-@UIScoped
 public class AddressEditor extends VerticalLayout implements Editor {
 
-	@Inject
-	private ContactService contactService;
-	
+	// ui
+
 	private ComboBox<Type> typeCombo;
 	private ComboBox<State> stateCombo;
 	private ComboBox<District> districtCombo;
@@ -42,8 +36,12 @@ public class AddressEditor extends VerticalLayout implements Editor {
 
 	private Binder<Address> binder;
 
-	@PostConstruct
-	public void init() {
+	// non-ui
+
+	private ContactService contactService;
+
+	public AddressEditor(ContactService contactService) {
+		this.contactService = contactService;
 
 		typeCombo = new ComboBox<Address.Type>("Address type");
 		configureTypeCombo();
@@ -143,10 +141,10 @@ public class AddressEditor extends VerticalLayout implements Editor {
 		return root;
 	}
 
-	public static abstract class AddressEvent extends ComponentEvent<AddressEditor> {
+	public static abstract class AddressEditorEvent extends ComponentEvent<AddressEditor> {
 		private Address address;
 
-		protected AddressEvent(AddressEditor source, Address address) {
+		protected AddressEditorEvent(AddressEditor source, Address address) {
 
 			super(source, false);
 			this.address = address;
@@ -157,13 +155,13 @@ public class AddressEditor extends VerticalLayout implements Editor {
 		}
 	}
 
-	public static class SaveEvent extends AddressEvent {
+	public static class SaveEvent extends AddressEditorEvent {
 		SaveEvent(AddressEditor source, Address address) {
 			super(source, address);
 		}
 	}
 
-	public static class CancelEvent extends AddressEvent {
+	public static class CancelEvent extends AddressEditorEvent {
 		CancelEvent(AddressEditor source, Address address) {
 			super(source, address);
 		}
@@ -185,7 +183,7 @@ public class AddressEditor extends VerticalLayout implements Editor {
 
 		saveButton.setVisible(enabled);
 		cancelButton.setVisible(enabled);
-		
+
 	}
 
 }

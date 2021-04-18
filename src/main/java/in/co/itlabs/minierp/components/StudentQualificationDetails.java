@@ -3,10 +3,6 @@ package in.co.itlabs.minierp.components;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
-import com.vaadin.cdi.annotation.UIScoped;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -20,27 +16,19 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.BigDecimalField;
-import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.binder.Binder;
 
 import in.co.itlabs.minierp.entities.Qualification;
 import in.co.itlabs.minierp.entities.Student;
+import in.co.itlabs.minierp.services.AcademicService;
 import in.co.itlabs.minierp.services.QualificationService;
 import in.co.itlabs.minierp.services.StudentService;
 
-@UIScoped
 public class StudentQualificationDetails extends VerticalLayout {
 
-	@Inject
-	private StudentService studentService;
-
-	@Inject
-	private QualificationService qualificationService;
-
-	@Inject
-	private QualificationEditor qualificationEditor;
+	// ui
 
 	private Checkbox editCheck;
 	private TextField interPhysicsPercentField;
@@ -53,6 +41,7 @@ public class StudentQualificationDetails extends VerticalLayout {
 	private TextField pcbPercentField;
 
 	private Button createQualificationButton;
+	
 	private Grid<Qualification> grid;
 
 	private Button saveButton;
@@ -60,16 +49,21 @@ public class StudentQualificationDetails extends VerticalLayout {
 
 	private Binder<Student> binder;
 
-	private int studentId;
-
-	private Qualification qualification;
-
 	private Dialog dialog;
+	private QualificationEditor qualificationEditor;
 
+	// non-ui
+
+	private StudentService studentService;
+	private QualificationService qualificationService;
+
+	private int studentId;
+	private Qualification qualification;
 	private final List<String> messages = new ArrayList<String>();
 
-	@PostConstruct
-	public void init() {
+	public StudentQualificationDetails(StudentService studentService, QualificationService qualificationService, AcademicService academicService) {
+		this.studentService = studentService;
+		this.qualificationService = qualificationService;
 
 		editCheck = new Checkbox("Edit");
 
@@ -125,14 +119,15 @@ public class StudentQualificationDetails extends VerticalLayout {
 		flex2.add(pcmPercentField, pcbPercentField);
 
 		add(editCheck, buttonBar, flex1, flex2, createQualificationButton, grid);
-		
+
 		setAlignSelf(Alignment.CENTER, buttonBar);
 
 		setAlignSelf(Alignment.END, createQualificationButton);
 
 		reload();
+		
 		// dialog related
-
+		qualificationEditor = new QualificationEditor(academicService);
 		qualificationEditor.addListener(QualificationEditor.SaveEvent.class, this::handleSaveQualificationEvent);
 
 		qualificationEditor.addListener(QualificationEditor.CancelEvent.class,
@@ -146,11 +141,6 @@ public class StudentQualificationDetails extends VerticalLayout {
 	private void configureTextField(TextField textField) {
 		textField.setWidth("100px");
 		textField.setReadOnly(true);
-	}
-
-	private void configureNumberField(NumberField numberField) {
-		numberField.setWidth("100px");
-		numberField.setReadOnly(true);
 	}
 
 	private void configureFlex(FlexLayout flexLayout) {
@@ -267,7 +257,7 @@ public class StudentQualificationDetails extends VerticalLayout {
 			}
 		} else {
 // 		update existing
-			boolean success = false;
+//			boolean success = false;
 //			academicService.updateAcademicQualification(event.getAcademicQualification());
 		}
 	}

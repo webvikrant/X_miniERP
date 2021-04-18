@@ -1,9 +1,5 @@
 package in.co.itlabs.minierp.components;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
-import com.vaadin.cdi.annotation.UIScoped;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
@@ -28,22 +24,16 @@ import in.co.itlabs.minierp.services.AcademicService;
 import in.co.itlabs.minierp.services.StudentService;
 import in.co.itlabs.minierp.util.AdmissionCategory;
 import in.co.itlabs.minierp.util.AdmissionMode;
-import in.co.itlabs.minierp.util.Stage;
+import in.co.itlabs.minierp.util.Semester;
 
-@UIScoped
 public class StudentAdmissionDetails extends VerticalLayout {
 
-	@Inject
-	private AcademicService academicService;
-
-	@Inject
-	private StudentService studentService;
-
+	// ui
 	private Checkbox editCheck;
 
 	private ComboBox<Session> sessionCombo;
 	private ComboBox<Program> programCombo;
-	private ComboBox<Stage> stageCombo;
+	private ComboBox<Semester> stageCombo;
 	private ComboBox<AdmissionCategory> admissionCategoryCombo;
 
 	private RadioButtonGroup<AdmissionMode> admissionModeRadio;
@@ -61,8 +51,14 @@ public class StudentAdmissionDetails extends VerticalLayout {
 
 	private Binder<Student> binder;
 
-	@PostConstruct
-	public void init() {
+	// non-ui
+
+	private AcademicService academicService;
+	private StudentService studentService;
+
+	public StudentAdmissionDetails(StudentService studentService, AcademicService academicService) {
+		this.studentService = studentService;
+		this.academicService = academicService;
 
 		editCheck = new Checkbox("Edit");
 
@@ -72,7 +68,7 @@ public class StudentAdmissionDetails extends VerticalLayout {
 		programCombo = new ComboBox<Program>();
 		configureProgramCombo();
 
-		stageCombo = new ComboBox<Stage>();
+		stageCombo = new ComboBox<Semester>();
 		configureStageCombo();
 
 		admissionCategoryCombo = new ComboBox<AdmissionCategory>();
@@ -98,7 +94,7 @@ public class StudentAdmissionDetails extends VerticalLayout {
 
 		binder = new Binder<>(Student.class);
 
-		binder.forField(sessionCombo).asRequired("Session can not be blank").bind("session");
+		binder.forField(sessionCombo).asRequired("Session can not be blank").bind("admissionSession");
 
 		HorizontalLayout buttonBar = new HorizontalLayout();
 		buildButtonBar(buttonBar);
@@ -151,7 +147,7 @@ public class StudentAdmissionDetails extends VerticalLayout {
 	private void configureStageCombo() {
 		stageCombo.setLabel("Stage");
 		stageCombo.setWidth("200px");
-		stageCombo.setItems(Stage.values());
+		stageCombo.setItems(Semester.values());
 	}
 
 	private void configureAdmissionCategoryCombo() {

@@ -2,10 +2,8 @@ package in.co.itlabs.minierp.components;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
-import com.vaadin.cdi.annotation.UIScoped;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -16,16 +14,15 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.Registration;
 
 import in.co.itlabs.minierp.entities.College;
 import in.co.itlabs.minierp.entities.Student;
 import in.co.itlabs.minierp.services.AcademicService;
 
-@UIScoped
 public class Navigation extends HorizontalLayout implements AfterNavigationObserver {
 
-	@Inject
-	AcademicService academicService;
+	// ui
 
 	private HorizontalLayout menuHLayout;
 	private HorizontalLayout userHLayout;
@@ -38,8 +35,13 @@ public class Navigation extends HorizontalLayout implements AfterNavigationObser
 	private Button userButton;
 	private Button logoutButton;
 
-	@PostConstruct
-	public void init() {
+	// non-ui
+
+	private AcademicService academicService;
+
+	public Navigation(AcademicService academicService) {
+		this.academicService = academicService;
+
 		addClassName("navbar");
 
 		menuHLayout = new HorizontalLayout();
@@ -145,28 +147,28 @@ public class Navigation extends HorizontalLayout implements AfterNavigationObser
 		}
 	}
 
-//	public static abstract class CollegeEvent extends ComponentEvent<Navigation> {
-//		private College college;
-//
-//		protected CollegeEvent(Navigation source, College college) {
-//			super(source, false);
-//			this.college = college;
-//		}
-//
-//		public College getCollege() {
-//			return college;
-//		}
-//	}
-//
-//	public static class CollegeSelectedEvent extends CollegeEvent {
-//		CollegeSelectedEvent(Navigation source, College college) {
-//			super(source, college);
-//		}
-//	}
-//
-//	public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
-//			ComponentEventListener<T> listener) {
-//
-//		return getEventBus().addListener(eventType, listener);
-//	}
+	public static abstract class NavigationEvent extends ComponentEvent<Navigation> {
+		private College college;
+
+		protected NavigationEvent(Navigation source, College college) {
+			super(source, false);
+			this.college = college;
+		}
+
+		public College getCollege() {
+			return college;
+		}
+	}
+
+	public static class CollegeSelectedEvent extends NavigationEvent {
+		CollegeSelectedEvent(Navigation source, College college) {
+			super(source, college);
+		}
+	}
+
+	public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
+			ComponentEventListener<T> listener) {
+
+		return getEventBus().addListener(eventType, listener);
+	}
 }

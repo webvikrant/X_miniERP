@@ -18,6 +18,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
 import in.co.itlabs.minierp.components.Footer;
 import in.co.itlabs.minierp.components.Header;
 import in.co.itlabs.minierp.components.Navigation;
+import in.co.itlabs.minierp.services.AcademicService;
 
 @JsModule("@vaadin/vaadin-lumo-styles/presets/compact.js")
 @Theme(Lumo.class)
@@ -25,23 +26,26 @@ import in.co.itlabs.minierp.components.Navigation;
 @Push(PushMode.MANUAL)
 public class AppLayout extends VerticalLayout implements RouterLayout {
 
-	@Inject
+	// ui
+
 	private Header header;
-
-	@Inject
 	private Navigation navigation;
-
 	private VerticalLayout content;
+	private Footer footer;
+	
+	// non-ui
 
 	@Inject
-	private Footer footer;
+	private AcademicService academicService;
 
 	@PostConstruct
 	public void init() {
 		addClassName("app-layout");
 
+		header = new Header();
 		header.setWidthFull();
 
+		navigation = new Navigation(academicService);
 		navigation.setWidthFull();
 
 		content = new VerticalLayout();
@@ -49,6 +53,7 @@ public class AppLayout extends VerticalLayout implements RouterLayout {
 		content.setWidthFull();
 		content.addClassName("card");
 
+		footer = new Footer();
 		footer.setWidthFull();
 
 		VerticalLayout root = new VerticalLayout();

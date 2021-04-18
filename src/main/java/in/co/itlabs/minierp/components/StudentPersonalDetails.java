@@ -1,12 +1,9 @@
 package in.co.itlabs.minierp.components;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
-import com.vaadin.cdi.annotation.UIScoped;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
@@ -16,6 +13,8 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -39,15 +38,9 @@ import in.co.itlabs.minierp.services.MediaService;
 import in.co.itlabs.minierp.services.StudentService;
 import in.co.itlabs.minierp.util.Gender;
 
-@UIScoped
 public class StudentPersonalDetails extends VerticalLayout {
 
-	@Inject
-	private StudentService studentService;
-
-	@Inject
-	private MediaService mediaService;
-
+	// ui
 	private Checkbox editCheck;
 
 	private Select<Media> photographSelect;
@@ -74,8 +67,14 @@ public class StudentPersonalDetails extends VerticalLayout {
 
 	private Binder<Student> binder;
 
-	@PostConstruct
-	public void init() {
+	// non-ui
+	private StudentService studentService;
+	private MediaService mediaService;
+	private final List<String> messages = new ArrayList<String>();
+
+	public StudentPersonalDetails(StudentService studentService, MediaService mediaService) {
+		this.studentService = studentService;
+		this.mediaService = mediaService;
 
 		editCheck = new Checkbox("Edit");
 
@@ -132,7 +131,8 @@ public class StudentPersonalDetails extends VerticalLayout {
 		binder.forField(nameField).asRequired("Name can not be blank").bind("name");
 		binder.forField(motherNameField).asRequired("Mother name can not be blank").bind("motherName");
 		binder.forField(fatherNameField).asRequired("Father name can not be blank").bind("fatherName");
-		binder.forField(localGuardianNameField).asRequired("Local guardian name can not be blank").bind("localGuardianName");
+		binder.forField(localGuardianNameField).asRequired("Local guardian name can not be blank")
+				.bind("localGuardianName");
 
 		HorizontalLayout buttonBar = new HorizontalLayout();
 		buildButtonBar(buttonBar);
@@ -282,22 +282,31 @@ public class StudentPersonalDetails extends VerticalLayout {
 		saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		saveButton.addClickListener(e -> {
 			if (binder.validate().isOk()) {
-				Media photographMedia = binder.getBean().getPhotographMedia();
-				Media signatureMedia = binder.getBean().getSignatureMedia();
-				
-				if(photographMedia!=null) {
-					binder.getBean().setPhotographMediaId(photographMedia.getId());	
+
+				Student student = binder.getBean();
+
+				Media photographMedia = student.getPhotographMedia();
+				Media signatureMedia = student.getSignatureMedia();
+
+				if (photographMedia != null) {
+					student.setPhotographMediaId(photographMedia.getId());
 				}
-				if(signatureMedia!=null) {
-					binder.getBean().setSignatureMediaId(signatureMedia.getId());	
+				if (signatureMedia != null) {
+					student.setSignatureMediaId(signatureMedia.getId());
 				}
 
-				fireEvent(new SaveEvent(this, binder.getBean()));
+				boolean success = studentService.updateStudentPersonalDetails(messages, student);
+				if (success) {
+					Notification.show("Personal details saved successfully", 3000, Position.TOP_CENTER);
+					setStudentId(student.getId());
+				} else {
+					Notification.show(messages.toString(), 3000, Position.TOP_CENTER);
+				}
 			}
 		});
 
 		cancelButton.addClickListener(e -> {
-			fireEvent(new CancelEvent(this, binder.getBean()));
+//			fireEvent(new CancelEvent(this, binder.getBean()));
 		});
 
 		root.add(saveButton, cancelButton);
@@ -307,7 +316,7 @@ public class StudentPersonalDetails extends VerticalLayout {
 		Student student = studentService.getStudentById(studentId);
 
 		List<Media> photoMedias = mediaService.getImageMedias(studentId);
-		
+
 		photographSelect.setItems(photoMedias);
 		Media photographMedia = mediaService.getMedia(student.getPhotographMediaId());
 		student.setPhotographMedia(photographMedia);
@@ -323,10 +332,10 @@ public class StudentPersonalDetails extends VerticalLayout {
 
 	}
 
-	public static abstract class StudentEvent extends ComponentEvent<StudentPersonalDetails> {
+	public static abstract class StudentPersonalDetailsEvent extends ComponentEvent<StudentPersonalDetails> {
 		private Student student;
 
-		protected StudentEvent(StudentPersonalDetails source, Student student) {
+		protected StudentPersonalDetailsEvent(StudentPersonalDetails source, Student student) {
 
 			super(source, false);
 			this.student = student;
@@ -337,14 +346,8 @@ public class StudentPersonalDetails extends VerticalLayout {
 		}
 	}
 
-	public static class SaveEvent extends StudentEvent {
-		SaveEvent(StudentPersonalDetails source, Student student) {
-			super(source, student);
-		}
-	}
-
-	public static class CancelEvent extends StudentEvent {
-		CancelEvent(StudentPersonalDetails source, Student student) {
+	public static class RefreshEvent extends StudentPersonalDetailsEvent {
+		RefreshEvent(StudentPersonalDetails source, Student student) {
 			super(source, student);
 		}
 	}
