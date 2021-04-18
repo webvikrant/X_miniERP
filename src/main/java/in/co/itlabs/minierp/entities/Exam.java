@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 public class Exam {
 
 	public enum Level {
-		HIGH_SCHOOL, INTERMEDIATE, DIPLOMA, DEGREE
+		CLASS_10, CLASS_12, DIPLOMA, DEGREE
 	}
 
 	private int id;

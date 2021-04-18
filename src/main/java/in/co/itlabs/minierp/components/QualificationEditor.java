@@ -123,7 +123,7 @@ public class QualificationEditor extends VerticalLayout implements Editor {
 		levelCombo.setItemLabelGenerator(level -> {
 			return level.name();
 		});
-		levelCombo.setItems(Level.HIGH_SCHOOL, Level.INTERMEDIATE, Level.DIPLOMA, Level.DEGREE);
+		levelCombo.setItems(Level.CLASS_10, Level.CLASS_12, Level.DIPLOMA, Level.DEGREE);
 		levelCombo.addValueChangeListener(e -> {
 			examCombo.clear();
 			if (e.getValue() != null) {
@@ -193,30 +193,30 @@ public class QualificationEditor extends VerticalLayout implements Editor {
 		return root;
 	}
 
-	public static abstract class AcademicQualificationEvent extends ComponentEvent<QualificationEditor> {
-		private Qualification academicQualification;
+	public static abstract class QualificationEvent extends ComponentEvent<QualificationEditor> {
+		private Qualification qualification;
 
-		protected AcademicQualificationEvent(QualificationEditor source,
-				Qualification academicQualification) {
+		protected QualificationEvent(QualificationEditor source,
+				Qualification qualification) {
 
 			super(source, false);
-			this.academicQualification = academicQualification;
+			this.qualification = qualification;
 		}
 
-		public Qualification getAcademicQualification() {
-			return academicQualification;
-		}
-	}
-
-	public static class SaveEvent extends AcademicQualificationEvent {
-		SaveEvent(QualificationEditor source, Qualification academicQualification) {
-			super(source, academicQualification);
+		public Qualification getQualification() {
+			return qualification;
 		}
 	}
 
-	public static class CancelEvent extends AcademicQualificationEvent {
-		CancelEvent(QualificationEditor source, Qualification academicQualification) {
-			super(source, academicQualification);
+	public static class SaveEvent extends QualificationEvent {
+		SaveEvent(QualificationEditor source, Qualification qualification) {
+			super(source, qualification);
+		}
+	}
+
+	public static class CancelEvent extends QualificationEvent {
+		CancelEvent(QualificationEditor source, Qualification qualification) {
+			super(source, qualification);
 		}
 	}
 

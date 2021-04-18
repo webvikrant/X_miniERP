@@ -62,7 +62,7 @@ public class StudentService {
 					.executeUpdate();
 
 			con.commit();
-			
+
 			newId = id;
 		} catch (Exception e) {
 			logger.debug(e.getMessage());
@@ -138,6 +138,24 @@ public class StudentService {
 					.addParameter("signatureMediaId", student.getSignatureMediaId())
 					.addParameter("name", student.getName()).addParameter("birthDate", student.getBirthDate())
 					.addParameter("gender", student.getGender()).executeUpdate();
+			success = true;
+			con.close();
+		} catch (Exception e) {
+			logger.debug(student.toString());
+			messages.add(e.getMessage());
+		}
+		return success;
+	}
+
+	// update personal details
+	public boolean updateStudentInterMarks(List<String> messages, Student student) {
+		boolean success = false;
+		Sql2o sql2o = databaseService.getSql2o();
+		String sql = "update student set interEnglishPercent = :interEnglishPercent where id = :id";
+
+		try (Connection con = sql2o.open()) {
+			con.createQuery(sql).addParameter("id", student.getId())
+					.addParameter("interEnglishPercent", student.getInterEnglishPercent()).executeUpdate();
 			success = true;
 			con.close();
 		} catch (Exception e) {

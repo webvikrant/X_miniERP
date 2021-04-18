@@ -19,7 +19,8 @@ public class QualificationService {
 	@Inject
 	private DatabaseService databaseService;
 	
-	// academic qualification
+	// qualification
+
 	// create
 	public int createQualification(Qualification qualification) {
 		int id = 0;

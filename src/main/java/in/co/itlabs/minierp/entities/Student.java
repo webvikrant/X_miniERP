@@ -1,5 +1,6 @@
 package in.co.itlabs.minierp.entities;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -26,6 +27,8 @@ public class Student {
 	private String admissionId;
 	private LocalDate admissionDate;
 
+	private BigDecimal interEnglishPercent;
+	
 	// foreign keys
 	private int collegeId;
 	private int sessionId;
