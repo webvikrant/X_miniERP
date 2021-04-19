@@ -100,9 +100,15 @@ public class StudentSessionInfoEditor extends VerticalLayout implements Editor {
 
 		binder = new Binder<>(StudentSessionInfo.class);
 
-		binder.forField(programCombo).bind("program");
+		binder.forField(programCombo).asRequired("Program can not be blank").bind("program");
 		binder.forField(semesterCombo).bind("semester");
 		binder.forField(semesterStatusCombo).bind("semesterStatus");
+		binder.forField(hostelCheck).bind("hostel");
+		binder.forField(scholarshipCheck).bind("scholarship");
+		binder.forField(scholarshipFormNoField).bind("scholarshipFormNo");
+		binder.forField(scholarshipAmountField).bind("scholarshipAmount");
+		binder.forField(collegeScholarshipStatusCombo).bind("collegeScholarshipStatus");
+		binder.forField(dswoScholarshipStatusCombo).bind("dswoScholarshipStatus");
 
 		saveButton = new Button("Save", VaadinIcon.CHECK.create());
 		cancelButton = new Button("Cancel", VaadinIcon.CLOSE.create());
@@ -264,6 +270,7 @@ public class StudentSessionInfoEditor extends VerticalLayout implements Editor {
 		saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		saveButton.addClickListener(e -> {
 			if (binder.validate().isOk()) {
+				binder.getBean().setProgramId(binder.getBean().getProgram().getId());
 				fireEvent(new SaveEvent(this, binder.getBean()));
 			}
 		});

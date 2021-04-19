@@ -208,6 +208,58 @@ public class StudentService {
 		return sessionInfos;
 	}
 
+	// update personal details
+	public boolean updateStudentSessionInfo(List<String> messages, StudentSessionInfo studentSessionInfo) {
+		boolean success = false;
+		Sql2o sql2o = databaseService.getSql2o();
+
+		String insertInfoSql = "update student_session_info set programId = :programId, semester = :semester,"
+				+ " semesterStatus = :semesterStatus, hostel = :hostel, scholarship = :scholarship,"
+				+ " scholarshipFormNo = :scholarshipFormNo, scholarshipAmount = :scholarshipAmount,"
+				+ " collegeScholarshipStatus = :collegeScholarshipStatus,"
+				+ " dswoScholarshipStatus = :dswoScholarshipStatus where id = :id";
+
+		try (Connection con = sql2o.open()) {
+
+			// insert new record
+			con.createQuery(insertInfoSql).addParameter("programId", studentSessionInfo.getProgramId())
+					.addParameter("semester", studentSessionInfo.getSemester())
+					.addParameter("semesterStatus", studentSessionInfo.getSemesterStatus())
+					.addParameter("hostel", studentSessionInfo.isHostel())
+					.addParameter("scholarship", studentSessionInfo.isScholarship())
+					.addParameter("scholarshipFormNo", studentSessionInfo.getScholarshipFormNo())
+					.addParameter("scholarshipAmount", studentSessionInfo.getScholarshipAmount())
+					.addParameter("collegeScholarshipStatus", studentSessionInfo.getCollegeScholarshipStatus())
+					.addParameter("dswoScholarshipStatus", studentSessionInfo.getDswoScholarshipStatus())
+					.addParameter("id", studentSessionInfo.getId()).executeUpdate();
+
+			success = true;
+			con.close();
+		} catch (Exception e) {
+			logger.debug(studentSessionInfo.toString());
+			messages.add(e.getMessage());
+		}
+		return success;
+	}
+
+	// delete personal details
+	public boolean deleteStudentSessionInfo(List<String> messages, StudentSessionInfo studentSessionInfo) {
+		boolean success = false;
+		Sql2o sql2o = databaseService.getSql2o();
+
+		String deleteSql = "delete student_session_info where id = :id";
+
+		try (Connection con = sql2o.open()) {
+			con.createQuery(deleteSql).addParameter("id", studentSessionInfo.getId()).executeUpdate();
+			updateLatestStudentSessionInfo(messages, studentSessionInfo.getStudentId(), con);
+			con.close();
+		} catch (Exception e) {
+			logger.debug(studentSessionInfo.toString());
+			messages.add(e.getMessage());
+		}
+		return success;
+	}
+
 	// insert current session info
 	private void insertStudentSessionInfo(List<String> messages, StudentSessionInfo studentSessionInfo,
 			Connection con) {
@@ -242,21 +294,4 @@ public class StudentService {
 
 	}
 
-	// delete personal details
-	public boolean deleteStudentSessionInfo(List<String> messages, StudentSessionInfo studentSessionInfo) {
-		boolean success = false;
-		Sql2o sql2o = databaseService.getSql2o();
-
-		String deleteSql = "delete student_session_info where id = :id";
-
-		try (Connection con = sql2o.open()) {
-			con.createQuery(deleteSql).addParameter("id", studentSessionInfo.getId()).executeUpdate();
-			updateLatestStudentSessionInfo(messages, studentSessionInfo.getStudentId(), con);
-			con.close();
-		} catch (Exception e) {
-			logger.debug(studentSessionInfo.toString());
-			messages.add(e.getMessage());
-		}
-		return success;
-	}
 }

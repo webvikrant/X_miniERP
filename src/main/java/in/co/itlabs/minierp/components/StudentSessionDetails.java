@@ -1,10 +1,12 @@
 package in.co.itlabs.minierp.components;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import in.co.itlabs.minierp.entities.Program;
@@ -26,6 +28,7 @@ public class StudentSessionDetails extends VerticalLayout {
 	private AcademicService academicService;
 
 	private int studentId;
+	private final List<String> messages = new ArrayList<String>();
 
 	public StudentSessionDetails(StudentService stduentService, AcademicService academicService) {
 		this.studentService = stduentService;
@@ -78,6 +81,14 @@ public class StudentSessionDetails extends VerticalLayout {
 	}
 
 	private void handleSaveEvent(StudentSessionInfoEditor.SaveEvent event) {
-		Notification.show("Session info saved for " + event.getStudentSessionInfo().toString());
+		messages.clear();
+		boolean success = studentService.updateStudentSessionInfo(messages, event.getStudentSessionInfo());
+		if (success) {
+			Notification.show("Session updated successfully.", 5000, Position.TOP_CENTER);
+			reload();
+		} else {
+			Notification.show(messages.toString(), 5000, Position.TOP_CENTER);
+		}
+
 	}
 }
