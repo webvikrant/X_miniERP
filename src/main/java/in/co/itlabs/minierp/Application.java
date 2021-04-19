@@ -6,6 +6,9 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebListener;
 import javax.servlet.annotation.WebServlet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.cdi.CdiVaadinServlet;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SessionDestroyEvent;
@@ -18,16 +21,16 @@ import com.vaadin.flow.server.SessionInitListener;
 public class Application extends CdiVaadinServlet
 		implements ServletContextListener, SessionInitListener, SessionDestroyListener {
 
+	private static final Logger logger = LoggerFactory.getLogger(Application.class);
+
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		System.out.println("contextInitialized()...");
-		System.out.println("Application up...");
+		logger.info("Context initialized, Application up.");
 	}
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		System.out.println("contextDestroyed()...");
-		System.out.println("Application down...");
+		logger.info("Context destoyed, Application down.");
 	}
 
 	@Override
@@ -39,14 +42,12 @@ public class Application extends CdiVaadinServlet
 
 	@Override
 	public void sessionInit(SessionInitEvent event) throws ServiceException {
-		System.out.println("sessionInit()...");
-		System.out.println("Session initialized...");
+		logger.info("Session initialized, id: "+event.getSession().getSession().getId());
 	}
 
 	@Override
 	public void sessionDestroy(SessionDestroyEvent event) {
-		System.out.println("sessionDestroy()...");
-		System.out.println("Session destroyed...");
+		logger.info("Session destroyed, id: "+event.getSession().getSession().getId());;
 	}
 
 }

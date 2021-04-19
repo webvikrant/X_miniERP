@@ -6,33 +6,42 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
 
 import in.co.itlabs.minierp.components.Footer;
 import in.co.itlabs.minierp.components.Header;
-import in.co.itlabs.minierp.components.Navigation;
+import in.co.itlabs.minierp.components.NavBar;
+import in.co.itlabs.minierp.entities.College;
+import in.co.itlabs.minierp.entities.User;
 import in.co.itlabs.minierp.services.AcademicService;
+import in.co.itlabs.minierp.views.LoginView;
 
 @JsModule("@vaadin/vaadin-lumo-styles/presets/compact.js")
 @Theme(Lumo.class)
 @CssImport("./styles/shared-styles.css")
 @Push(PushMode.MANUAL)
-public class AppLayout extends VerticalLayout implements RouterLayout {
+public class AppLayout extends VerticalLayout implements RouterLayout, BeforeEnterObserver {
 
 	// ui
 
 	private Header header;
-	private Navigation navigation;
+	private NavBar navBar;
 	private VerticalLayout content;
 	private Footer footer;
-	
+
 	// non-ui
 
 	@Inject
@@ -40,13 +49,12 @@ public class AppLayout extends VerticalLayout implements RouterLayout {
 
 	@PostConstruct
 	public void init() {
-		addClassName("app-layout");
 
 		header = new Header();
 		header.setWidthFull();
 
-		navigation = new Navigation(academicService);
-		navigation.setWidthFull();
+		navBar = new NavBar(academicService);
+		navBar.setWidthFull();
 
 		content = new VerticalLayout();
 		content.setPadding(false);
@@ -60,10 +68,9 @@ public class AppLayout extends VerticalLayout implements RouterLayout {
 
 		root.getStyle().set("margin", "auto");
 		root.setPadding(false);
-		root.setSpacing(false);
 		root.setWidth("1000px");
 
-		root.add(header, navigation, content, footer);
+		root.add(header, navBar, content, footer);
 
 		add(root);
 	}
@@ -78,7 +85,33 @@ public class AppLayout extends VerticalLayout implements RouterLayout {
 	public void showRouterLayoutContent(HasElement newContent) {
 		// TODO Auto-generated method stub
 		if (newContent != null) {
-			content.getElement().appendChild(Objects.requireNonNull(newContent.getElement()));
+			College college = VaadinSession.getCurrent().getAttribute(College.class);
+			if (college == null) {
+				content.getElement()
+						.appendChild(new Text("Please select a college from the dropdown above.").getElement());
+			} else {
+				content.getElement().appendChild(Objects.requireNonNull(newContent.getElement()));
+			}
 		}
+	}
+
+	@Override
+	public void beforeEnter(BeforeEnterEvent event) {
+		System.out.println("app layout...Navigation target: "+event.getNavigationTarget());
+//		System.out.println("app layout...getForwardTargetParameters: "+event.getForwardTargetParameters());
+//		System.out.println("app layout...getForwardTargetRouteParameters: "+event.getForwardTargetRouteParameters());
+//		System.out.println("app layout...getRerouteTargetRouteParameters: "+event.getRerouteTargetRouteParameters());
+		System.out.println("app layout...getRouteParameters: "+event.getRouteParameters());
+		
+		User user = event.getUI().getSession().getAttribute(User.class);
+		if (user == null) {
+			Notification.show("AppLayout...beforeEnter...logged-in user: null...redirecting", 5000,
+					Position.TOP_CENTER);
+			event.forwardTo(LoginView.class);
+		} else {
+			Notification.show("AppLayout...beforeEnter...logged-in user: " + user.toString(), 5000,
+					Position.TOP_CENTER);
+		}
+
 	}
 }
