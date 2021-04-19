@@ -4,12 +4,17 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap;
 import com.vaadin.flow.data.binder.Binder;
@@ -19,6 +24,7 @@ import in.co.itlabs.minierp.entities.Program;
 import in.co.itlabs.minierp.entities.StudentSessionInfo;
 import in.co.itlabs.minierp.services.AcademicService;
 import in.co.itlabs.minierp.util.Editor;
+import in.co.itlabs.minierp.util.ScholarshipStatus;
 import in.co.itlabs.minierp.util.Semester;
 import in.co.itlabs.minierp.util.SemesterStatus;
 
@@ -30,8 +36,28 @@ public class StudentSessionInfoEditor extends VerticalLayout implements Editor {
 	private ComboBox<Semester> semesterCombo;
 	private ComboBox<SemesterStatus> semesterStatusCombo;
 
+	private Checkbox hostelCheck;
+
+	private Checkbox scholarshipCheck;
+	private TextField scholarshipFormNoField;
+	private BigDecimalField scholarshipAmountField;
+	private ComboBox<ScholarshipStatus> collegeScholarshipStatusCombo;
+	private ComboBox<ScholarshipStatus> dswoScholarshipStatusCombo;
+
+	private Tabs tabs;
+	private Tab hostelTab;
+	private Tab scholarshipTab;
+	private Tab marksTab;
+
+	private VerticalLayout content;
+
+	private VerticalLayout hostelContent;
+	private VerticalLayout scholarshipContent;
+	private VerticalLayout marksContent;
+
 	private Button saveButton;
 	private Button cancelButton;
+	private Button deleteButton;
 
 	private Binder<StudentSessionInfo> binder;
 
@@ -54,32 +80,65 @@ public class StudentSessionInfoEditor extends VerticalLayout implements Editor {
 		semesterStatusCombo = new ComboBox<SemesterStatus>();
 		configureSemesterStatusCombo();
 
+		hostelCheck = new Checkbox();
+		configureHostelCheck();
+
+		scholarshipCheck = new Checkbox();
+		configureScholarshipCheck();
+
+		scholarshipFormNoField = new TextField();
+		configureScholarshipFormNoField();
+
+		scholarshipAmountField = new BigDecimalField();
+		configureScholarshipAmountField();
+
+		collegeScholarshipStatusCombo = new ComboBox<ScholarshipStatus>();
+		configureCollegeScholarshipStatusCombo();
+
+		dswoScholarshipStatusCombo = new ComboBox<ScholarshipStatus>();
+		configureDswoScholarshipStatusCombo();
+
 		binder = new Binder<>(StudentSessionInfo.class);
 
 		binder.forField(programCombo).bind("program");
 		binder.forField(semesterCombo).bind("semester");
 		binder.forField(semesterStatusCombo).bind("semesterStatus");
 
-		saveButton = new Button("OK", VaadinIcon.CHECK.create());
+		saveButton = new Button("Save", VaadinIcon.CHECK.create());
 		cancelButton = new Button("Cancel", VaadinIcon.CLOSE.create());
+		deleteButton = new Button("Delete", VaadinIcon.TRASH.create());
 
 		HorizontalLayout buttonBar = buildActionBar();
+		buttonBar.setWidthFull();
 
-		FlexLayout flex1 = new FlexLayout();
-		configureFlex(flex1);
+		FlexLayout sessionFlex = new FlexLayout();
+		configureFlex(sessionFlex);
 
-		FlexLayout flex2 = new FlexLayout();
-		configureFlex(flex2);
+		hostelTab = new Tab("Hostel");
+		scholarshipTab = new Tab("Scholarship");
+		marksTab = new Tab("Marks");
 
-		FlexLayout flex3 = new FlexLayout();
-		configureFlex(flex3);
+		tabs = new Tabs();
 
-		flex1.add(sessionField, programCombo, semesterCombo, semesterStatusCombo);
+		content = new VerticalLayout();
 
-		add(flex1, flex2, flex3, buttonBar);
+		hostelContent = new VerticalLayout();
+		buildHostelContent(hostelContent);
 
-		setAlignSelf(Alignment.CENTER, buttonBar);
+		scholarshipContent = new VerticalLayout();
+		buildScholarshipContent(scholarshipContent);
 
+		marksContent = new VerticalLayout();
+		buildMarksContent(marksContent);
+
+		configureTabs();
+
+		sessionFlex.add(sessionField, programCombo, semesterCombo, semesterStatusCombo);
+
+		add(buttonBar, sessionFlex, tabs, content);
+
+		tabs.setSelectedTab(null);
+		tabs.setSelectedTab(hostelTab);
 	}
 
 	private void configureSessionField() {
@@ -110,6 +169,82 @@ public class StudentSessionInfoEditor extends VerticalLayout implements Editor {
 		semesterStatusCombo.setItems(SemesterStatus.values());
 	}
 
+	private void configureHostelCheck() {
+		hostelCheck.setLabel("Applied for hostel");
+		hostelCheck.setWidth("200px");
+	}
+
+	private void configureScholarshipCheck() {
+		scholarshipCheck.setLabel("Applied for scholarship");
+		scholarshipCheck.setWidth("2000px");
+	}
+
+	private void configureScholarshipFormNoField() {
+		scholarshipFormNoField.setLabel("Scholarship form no");
+		scholarshipFormNoField.setWidth("150px");
+	}
+
+	private void configureScholarshipAmountField() {
+		scholarshipAmountField.setLabel("Scholarship amount");
+		scholarshipAmountField.setWidth("150px");
+	}
+
+	private void configureCollegeScholarshipStatusCombo() {
+		collegeScholarshipStatusCombo.setWidth("150px");
+		collegeScholarshipStatusCombo.setLabel("Status at college");
+		collegeScholarshipStatusCombo.setItems(ScholarshipStatus.values());
+	}
+
+	private void configureDswoScholarshipStatusCombo() {
+		dswoScholarshipStatusCombo.setWidth("150px");
+		dswoScholarshipStatusCombo.setLabel("Status at DSWO");
+		dswoScholarshipStatusCombo.setItems(ScholarshipStatus.values());
+	}
+
+	private void configureTabs() {
+		content.setPadding(false);
+		content.setSpacing(false);
+
+		tabs.add(hostelTab, scholarshipTab, marksTab);
+
+		tabs.addSelectedChangeListener(event -> {
+			content.removeAll();
+
+			Tab tab = event.getSelectedTab();
+
+			if (tab == hostelTab) {
+				content.add(hostelContent);
+
+			} else if (tab == scholarshipTab) {
+				content.add(scholarshipContent);
+
+			} else if (tab == marksTab) {
+				content.add(marksContent);
+
+			}
+		});
+	}
+
+	private void buildHostelContent(VerticalLayout root) {
+		root.add(hostelCheck);
+	}
+
+	private void buildScholarshipContent(VerticalLayout root) {
+		FlexLayout flex = new FlexLayout();
+		configureFlex(flex);
+
+		flex.add(scholarshipFormNoField, scholarshipAmountField, collegeScholarshipStatusCombo,
+				dswoScholarshipStatusCombo);
+
+		root.add(scholarshipCheck, flex);
+	}
+
+	private void buildMarksContent(VerticalLayout root) {
+		Div div = new Div();
+		div.setText("Marks related info");
+		root.add(div);
+	}
+
 	private void configureFlex(FlexLayout flexLayout) {
 		flexLayout.setFlexWrap(FlexWrap.WRAP);
 		flexLayout.setAlignItems(Alignment.END);
@@ -137,9 +272,14 @@ public class StudentSessionInfoEditor extends VerticalLayout implements Editor {
 			fireEvent(new CancelEvent(this, binder.getBean()));
 		});
 
+		deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+		deleteButton.addClickListener(e -> {
+
+		});
+
 		Span blank = new Span();
 
-		root.add(saveButton, blank, cancelButton);
+		root.add(saveButton, cancelButton, blank, deleteButton);
 		root.expand(blank);
 
 		return root;
@@ -150,6 +290,7 @@ public class StudentSessionInfoEditor extends VerticalLayout implements Editor {
 
 		saveButton.setVisible(editable);
 		cancelButton.setVisible(editable);
+		deleteButton.setVisible(editable);
 
 	}
 

@@ -54,7 +54,6 @@ public class StudentDetailsView extends VerticalLayout {
 	private Tab qualificationTab;
 	private Tab mediaTab;
 	private Tab sessionTab;
-	private Tab marksTab;
 	private Tab formatsTab;
 
 	private VerticalLayout content;
@@ -105,7 +104,6 @@ public class StudentDetailsView extends VerticalLayout {
 		qualificationTab = new Tab("Qualification");
 		mediaTab = new Tab("Media");
 		sessionTab = new Tab("Sessions");
-		marksTab = new Tab("Marks");
 		formatsTab = new Tab("Formats");
 
 		content = new VerticalLayout();
@@ -188,7 +186,6 @@ public class StudentDetailsView extends VerticalLayout {
 		tabs.add(qualificationTab);
 		tabs.add(mediaTab);
 		tabs.add(sessionTab);
-		tabs.add(marksTab);
 		tabs.add(formatsTab);
 
 		tabs.addSelectedChangeListener(event -> {

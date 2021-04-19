@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import in.co.itlabs.minierp.entities.Program;
@@ -48,6 +49,8 @@ public class StudentSessionDetails extends VerticalLayout {
 			StudentSessionInfoEditor sessionInfoEditor = new StudentSessionInfoEditor(academicService);
 			sessionInfoEditor.setEditable(false);
 
+			sessionInfoEditor.addListener(StudentSessionInfoEditor.SaveEvent.class, this::handleSaveEvent);
+
 			Checkbox editCheck = new Checkbox("Edit");
 			editCheck.addValueChangeListener(e -> {
 				sessionInfoEditor.setEditable(e.getValue());
@@ -58,7 +61,7 @@ public class StudentSessionDetails extends VerticalLayout {
 
 			Program program = academicService.getProgramById(sessionInfo.getProgramId());
 			sessionInfo.setProgram(program);
-			
+
 			sessionInfoEditor.setStudentSessionInfo(sessionInfo);
 
 			VerticalLayout root = new VerticalLayout();
@@ -74,4 +77,7 @@ public class StudentSessionDetails extends VerticalLayout {
 		reload();
 	}
 
+	private void handleSaveEvent(StudentSessionInfoEditor.SaveEvent event) {
+		Notification.show("Session info saved for " + event.getStudentSessionInfo().toString());
+	}
 }

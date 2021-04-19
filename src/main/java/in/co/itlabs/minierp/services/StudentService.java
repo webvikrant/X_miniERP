@@ -30,7 +30,7 @@ public class StudentService {
 	// create
 	public int createStudent(List<String> messages, Student student) {
 
-		int newId = 0;
+		int newStudentId = 0;
 		Sql2o sql2o = databaseService.getSql2o();
 		String sql = "insert into student (collegeId, admissionId, admissionSessionId, admissionProgramId, admissionSemester,"
 				+ " lateralEntry, feeWaiver, kashmiriMigrant, pmsss, hostel, scholarship, prnNo, name)"
@@ -43,7 +43,7 @@ public class StudentService {
 		String addressSql = "insert into address (studentId, type) values(:studentId, :type)";
 
 		try (Connection con = sql2o.beginTransaction()) {
-			int id = con.createQuery(sql).addParameter("collegeId", student.getCollegeId())
+			int studentId = con.createQuery(sql).addParameter("collegeId", student.getCollegeId())
 					.addParameter("admissionId", student.getAdmissionId())
 					.addParameter("admissionSessionId", student.getAdmissionSessionId())
 					.addParameter("admissionProgramId", student.getAdmissionProgramId())
@@ -56,27 +56,28 @@ public class StudentService {
 					.addParameter("name", student.getName()).executeUpdate().getKey(Integer.class);
 
 			// insert 4 contacts
-			con.createQuery(contactSql).addParameter("studentId", id).addParameter("type", Type.STUDENT)
+			con.createQuery(contactSql).addParameter("studentId", studentId).addParameter("type", Type.STUDENT)
 					.executeUpdate();
-			con.createQuery(contactSql).addParameter("studentId", id).addParameter("type", Contact.Type.MOTHER)
+			con.createQuery(contactSql).addParameter("studentId", studentId).addParameter("type", Contact.Type.MOTHER)
 					.executeUpdate();
-			con.createQuery(contactSql).addParameter("studentId", id).addParameter("type", Contact.Type.FATHER)
+			con.createQuery(contactSql).addParameter("studentId", studentId).addParameter("type", Contact.Type.FATHER)
 					.executeUpdate();
-			con.createQuery(contactSql).addParameter("studentId", id).addParameter("type", Contact.Type.LOCAL_GUARDIAN)
-					.executeUpdate();
+			con.createQuery(contactSql).addParameter("studentId", studentId)
+					.addParameter("type", Contact.Type.LOCAL_GUARDIAN).executeUpdate();
 
 			// insert 3 addresses
-			con.createQuery(addressSql).addParameter("studentId", id).addParameter("type", Address.Type.PERMANENT)
-					.executeUpdate();
-			con.createQuery(addressSql).addParameter("studentId", id).addParameter("type", Address.Type.CORRESPONDENCE)
-					.executeUpdate();
-			con.createQuery(addressSql).addParameter("studentId", id).addParameter("type", Address.Type.LOCAL_GUARDIAN)
-					.executeUpdate();
+			con.createQuery(addressSql).addParameter("studentId", studentId)
+					.addParameter("type", Address.Type.PERMANENT).executeUpdate();
+			con.createQuery(addressSql).addParameter("studentId", studentId)
+					.addParameter("type", Address.Type.CORRESPONDENCE).executeUpdate();
+			con.createQuery(addressSql).addParameter("studentId", studentId)
+					.addParameter("type", Address.Type.LOCAL_GUARDIAN).executeUpdate();
 
 			// update current session info and associated logs
 			StudentSessionInfo sessionInfo = new StudentSessionInfo();
-			sessionInfo.setStudentId(id);
+			sessionInfo.setStudentId(studentId);
 			sessionInfo.setSessionId(student.getAdmissionSessionId());
+			sessionInfo.setLatest(true);
 			sessionInfo.setProgramId(student.getAdmissionProgramId());
 			sessionInfo.setSemester(student.getAdmissionSemester());
 			sessionInfo.setSemesterStatus(SemesterStatus.Regular);
@@ -84,15 +85,16 @@ public class StudentService {
 			sessionInfo.setScholarship(student.isScholarship());
 
 			insertStudentSessionInfo(messages, sessionInfo, con);
+			updateLatestStudentSessionInfo(messages, studentId, con);
 
 			con.commit();
 
-			newId = id;
+			newStudentId = studentId;
 		} catch (Exception e) {
 			logger.debug(e.getMessage());
 			messages.add(e.getMessage());
 		}
-		return newId;
+		return newStudentId;
 	}
 
 	// read one
@@ -213,14 +215,10 @@ public class StudentService {
 		String insertInfoSql = "insert into student_session_info(studentId, sessionId, latest, programId, semester, semesterStatus, hostel, scholarship)"
 				+ " values(:studentId, :sessionId, :latest, :programId, :semester, :semesterStatus, :hostel, :scholarship) ";
 
-		String updateLatestFalseSql = "update student_session_info set latest = false where studentId = :studentId";
-
-		con.createQuery(updateLatestFalseSql).addParameter("studentId", studentSessionInfo.getStudentId())
-				.executeUpdate();
-
 		// insert new record
 		con.createQuery(insertInfoSql).addParameter("studentId", studentSessionInfo.getStudentId())
-				.addParameter("sessionId", studentSessionInfo.getSessionId()).addParameter("latest", true)
+				.addParameter("sessionId", studentSessionInfo.getSessionId())
+				.addParameter("latest", studentSessionInfo.isLatest())
 				.addParameter("programId", studentSessionInfo.getProgramId())
 				.addParameter("semester", studentSessionInfo.getSemester())
 				.addParameter("semesterStatus", studentSessionInfo.getSemesterStatus())
@@ -230,20 +228,35 @@ public class StudentService {
 	}
 
 	// update current session info
-	private void updateStudentSessionInfo(List<String> messages, StudentSessionInfo studentSessionInfo,
-			Connection con) {
+	private void updateLatestStudentSessionInfo(List<String> messages, int studentId, Connection con) {
 
-		String updateInfoSql = "update student_session_info set programId = :programId, set semester = :semester,"
-				+ " set semesterStatus = :semesterStatus, set hostel = :hostel, set scholarship = :scholarship"
-				+ " where id = :id";
+		String updateLatestFalseSql = "update student_session_info set latest = false where studentId = :studentId";
+		String maxSessionIdSql = "select max(sessionId) from student_session_info where studentId = :studentId";
+		String updateLatestTrueSql = "update student_session_info set latest = true where studentId = :studentId and sessionId = :sessionId";
 
-		// update existing record
-		con.createQuery(updateInfoSql).addParameter("programId", studentSessionInfo.getProgramId())
-				.addParameter("semester", studentSessionInfo.getSemester())
-				.addParameter("semesterStatus", studentSessionInfo.getSemesterStatus())
-				.addParameter("hostel", studentSessionInfo.isHostel())
-				.addParameter("scholarship", studentSessionInfo.isScholarship())
-				.addParameter("id", studentSessionInfo.getId()).executeUpdate();
+		con.createQuery(updateLatestFalseSql).addParameter("studentId", studentId).executeUpdate();
+		int maxSessionId = con.createQuery(maxSessionIdSql).addParameter("studentId", studentId)
+				.executeScalar(Integer.class);
+		con.createQuery(updateLatestTrueSql).addParameter("studentId", studentId)
+				.addParameter("sessionId", maxSessionId).executeUpdate();
+
 	}
 
+	// delete personal details
+	public boolean deleteStudentSessionInfo(List<String> messages, StudentSessionInfo studentSessionInfo) {
+		boolean success = false;
+		Sql2o sql2o = databaseService.getSql2o();
+
+		String deleteSql = "delete student_session_info where id = :id";
+
+		try (Connection con = sql2o.open()) {
+			con.createQuery(deleteSql).addParameter("id", studentSessionInfo.getId()).executeUpdate();
+			updateLatestStudentSessionInfo(messages, studentSessionInfo.getStudentId(), con);
+			con.close();
+		} catch (Exception e) {
+			logger.debug(studentSessionInfo.toString());
+			messages.add(e.getMessage());
+		}
+		return success;
+	}
 }
