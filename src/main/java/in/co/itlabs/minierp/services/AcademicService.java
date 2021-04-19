@@ -64,6 +64,22 @@ public class AcademicService {
 		return programs;
 	}
 
+	public Program getProgramById(int id) {
+		Program program = null;
+
+		Sql2o sql2o = databaseService.getSql2o();
+
+		try (Connection con = sql2o.open()) {
+			String sql = "select * from program where id = :id";
+			program = con.createQuery(sql).addParameter("id", id).executeAndFetchFirst(Program.class);
+			con.close();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+
+		return program;
+	}
+
 	// =================================================================================
 	// sessions
 	// =================================================================================
@@ -82,6 +98,22 @@ public class AcademicService {
 		}
 
 		return sessions;
+	}
+
+	public Session getSessionById(int id) {
+		Session session = null;
+
+		Sql2o sql2o = databaseService.getSql2o();
+
+		try (Connection con = sql2o.open()) {
+			String sql = "select * from session where id = :id";
+			session = con.createQuery(sql).addParameter("id", id).executeAndFetchFirst(Session.class);
+			con.close();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+
+		return session;
 	}
 
 	// =================================================================================

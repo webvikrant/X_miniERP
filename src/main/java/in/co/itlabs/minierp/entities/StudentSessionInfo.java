@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class StudentSessionInfo {
 	private int id;
 	private int studentId;
-	
+
 	private int sessionId;
 	private boolean latest;
 
@@ -24,9 +24,13 @@ public class StudentSessionInfo {
 
 	private boolean hostel;
 	private boolean scholarship;
-	
+
 	private String scholarshipFormNo;
 	private BigDecimal scholarshipAmount;
 	private ScholarshipStatus collegeScholarshipStatus;
 	private ScholarshipStatus dswoScholarshipStatus;
+
+	// transient
+	private Session session;
+	private Program program;
 }
