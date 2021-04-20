@@ -1,8 +1,7 @@
 package in.co.itlabs.minierp.views;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -17,10 +16,13 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -28,11 +30,10 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
 import in.co.itlabs.minierp.entities.College;
-import in.co.itlabs.minierp.entities.User;
 import in.co.itlabs.minierp.layouts.GuestLayout;
-import in.co.itlabs.minierp.services.AcademicService;
-import in.co.itlabs.minierp.util.ErpModule;
-import in.co.itlabs.minierp.util.Permission;
+import in.co.itlabs.minierp.services.AuthService;
+import in.co.itlabs.minierp.services.AuthService.AuthenticatedUser;
+import in.co.itlabs.minierp.services.AuthService.Credentials;
 
 @PageTitle(value = "Login")
 @Route(value = "login", layout = GuestLayout.class)
@@ -40,8 +41,20 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
 	private static final Logger logger = LoggerFactory.getLogger(LoginView.class);
 
+	// ui
+
+	private TextField userNameField = new TextField("User name");
+	private PasswordField passwordField = new PasswordField("Password");
+	private Button loginButton = new Button("Login", VaadinIcon.SIGN_IN.create());
+	private Button forgotPasswordButton = new Button("Forgot your password?");
+
+	private Binder<Credentials> binder;
+	// non-ui
+
 	@Inject
-	private AcademicService academicService;
+	private AuthService authService;
+
+	private final List<String> messages = new ArrayList<String>();
 
 	@PostConstruct
 	public void init() {
@@ -53,6 +66,19 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 //		image.getStyle().set("objectFit", "contain");
 		image.addClassName("card-photo");
 		image.setWidth("650px");
+
+		userNameField = new TextField("Username");
+		userNameField.setWidthFull();
+
+		passwordField = new PasswordField("Password");
+		passwordField.setWidthFull();
+
+		binder = new Binder<>(Credentials.class);
+
+		binder.forField(userNameField).asRequired("Username can not be blank").bind("username");
+		binder.forField(passwordField).asRequired("Password can not be blank").bind("password");
+
+		binder.setBean(new Credentials());
 
 		// right id form
 		VerticalLayout loginForm = new VerticalLayout();
@@ -75,41 +101,39 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		H2 appName = new H2("miniERP");
 		H2 clientName = new H2("IEC");
 
-		TextField userNameField = new TextField("User name");
-		userNameField.setWidthFull();
-
-		PasswordField passwordField = new PasswordField("Password");
-		passwordField.setWidthFull();
-
-		Button loginButton = new Button("Login", VaadinIcon.SIGN_IN.create());
 		loginButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		loginButton.addClickListener(e -> {
-			// assuming login is successful.
 			// store the user and his/her privileges in session
 			// check if any colleges exist.
-			User user = new User();
-			user.setId(1);
-			user.setUsername("webvikrant");
 
-			Permission privilege = new Permission(true, true, true, true);
-			Map<ErpModule, Permission> accessMap = new HashMap<>();
-			accessMap.put(ErpModule.Students, privilege);
+			if (binder.validate().isOk()) {
+				messages.clear();
 
-			VaadinSession.getCurrent().setAttribute(User.class, user);
-			logger.info("User authenticated and stored in server-session: "
-					+ VaadinSession.getCurrent().getSession().getId() + ", user: " + user.toString());
+				AuthenticatedUser authUser = null;
 
-			List<College> colleges = academicService.getAllColleges();
-			if (colleges != null && !colleges.isEmpty()) {
-				VaadinSession.getCurrent().setAttribute(College.class, colleges.get(0));
-				logger.info("College set in server-session: " + colleges.get(0).getName());
+				if (binder.getBean().getUsername().equalsIgnoreCase("su")) {
+					authUser = authService.authenticateSuperUser(messages, binder.getBean());
+				} else {
+					authUser = authService.authenticate(messages, binder.getBean());
+				}
+
+				if (authUser == null) {
+					Notification.show(messages.toString(), 5000, Position.TOP_CENTER);
+				} else {
+					VaadinSession.getCurrent().setAttribute(AuthenticatedUser.class, authUser);
+
+					List<College> colleges = authUser.getColleges();
+					if (colleges != null && !colleges.isEmpty()) {
+						VaadinSession.getCurrent().setAttribute(College.class, colleges.get(0));
+						logger.info("College set in server-session: " + colleges.get(0).getName());
+					}
+
+					UI.getCurrent().navigate(DashboardView.class);
+
+				}
 			}
-
-			UI.getCurrent().navigate(DashboardView.class);
-
 		});
 
-		Button forgotPasswordButton = new Button("Forgot your password?");
 		forgotPasswordButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
 		HorizontalLayout buttonBar = new HorizontalLayout();
@@ -125,7 +149,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
 	@Override
 	public void beforeEnter(BeforeEnterEvent event) {
-		User user = VaadinSession.getCurrent().getAttribute(User.class);
+		AuthenticatedUser user = VaadinSession.getCurrent().getAttribute(AuthenticatedUser.class);
 		if (user != null) {
 			// user already logged in
 			event.forwardTo(DashboardView.class);

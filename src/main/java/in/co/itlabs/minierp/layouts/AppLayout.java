@@ -23,8 +23,8 @@ import in.co.itlabs.minierp.components.Footer;
 import in.co.itlabs.minierp.components.Header;
 import in.co.itlabs.minierp.components.NavBar;
 import in.co.itlabs.minierp.entities.College;
-import in.co.itlabs.minierp.entities.User;
 import in.co.itlabs.minierp.services.AcademicService;
+import in.co.itlabs.minierp.services.AuthService.AuthenticatedUser;
 import in.co.itlabs.minierp.views.LoginView;
 
 @JsModule("@vaadin/vaadin-lumo-styles/presets/compact.js")
@@ -95,8 +95,8 @@ public class AppLayout extends VerticalLayout implements RouterLayout, BeforeEnt
 
 	@Override
 	public void beforeEnter(BeforeEnterEvent event) {
-		User user = event.getUI().getSession().getAttribute(User.class);
-		if (user == null) {
+		AuthenticatedUser authUser = event.getUI().getSession().getAttribute(AuthenticatedUser.class);
+		if (authUser == null) {
 			event.forwardTo(LoginView.class);
 		}
 	}

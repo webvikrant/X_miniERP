@@ -21,6 +21,7 @@ import com.vaadin.flow.shared.Registration;
 import in.co.itlabs.minierp.entities.College;
 import in.co.itlabs.minierp.entities.Student;
 import in.co.itlabs.minierp.services.AcademicService;
+import in.co.itlabs.minierp.services.AuthService.AuthenticatedUser;
 import in.co.itlabs.minierp.views.DashboardView;
 import in.co.itlabs.minierp.views.LoginView;
 import in.co.itlabs.minierp.views.StudentDetailsView;
@@ -51,7 +52,7 @@ public class NavBar extends HorizontalLayout {
 		menuBar = new MenuBar();
 		configureMenuBar();
 
-		userButton = new Button("Vikrant Thakur", VaadinIcon.USER.create());
+		userButton = new Button("", VaadinIcon.USER.create());
 		logoutButton = new Button("Logout", VaadinIcon.SIGN_OUT.create());
 
 		configureButtons();
@@ -64,8 +65,12 @@ public class NavBar extends HorizontalLayout {
 	}
 
 	private void configureButtons() {
+		AuthenticatedUser authuUser = VaadinSession.getCurrent().getAttribute(AuthenticatedUser.class);
+		if (authuUser != null) {
+			userButton.setText(authuUser.getName());
+		}
+
 		logoutButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
-		;
 		logoutButton.addClickListener(e -> {
 			VaadinSession.getCurrent().getSession().invalidate();
 			UI.getCurrent().navigate(LoginView.class);
