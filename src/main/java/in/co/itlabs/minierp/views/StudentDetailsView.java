@@ -21,7 +21,11 @@ import in.co.itlabs.minierp.components.StudentPersonalDetails;
 import in.co.itlabs.minierp.components.StudentQualificationDetails;
 import in.co.itlabs.minierp.components.StudentSessionDetails;
 import in.co.itlabs.minierp.entities.College;
+import in.co.itlabs.minierp.entities.Media;
+import in.co.itlabs.minierp.entities.Program;
+import in.co.itlabs.minierp.entities.Session;
 import in.co.itlabs.minierp.entities.Student;
+import in.co.itlabs.minierp.entities.StudentSessionInfo;
 import in.co.itlabs.minierp.layouts.AppLayout;
 import in.co.itlabs.minierp.services.AcademicService;
 import in.co.itlabs.minierp.services.ContactService;
@@ -95,7 +99,7 @@ public class StudentDetailsView extends VerticalLayout {
 		studentCombo = new ComboBox<Student>();
 		configureCombo(studentCombo);
 
-		studentInfoCard = new StudentInfoCard(studentService);
+		studentInfoCard = new StudentInfoCard();
 
 		tabs = new Tabs();
 		personalTab = new Tab("Personal");
@@ -152,7 +156,26 @@ public class StudentDetailsView extends VerticalLayout {
 			splitLayout.setVisible(false);
 		} else {
 			splitLayout.setVisible(true);
-			studentInfoCard.setStudentId(student.getId());
+
+			// load images
+			Media photographMedia = mediaService.getMedia(student.getPhotographMediaId());
+			student.setPhotographMedia(photographMedia);
+
+			Media signatureMedia = mediaService.getMedia(student.getSignatureMediaId());
+			student.setSignatureMedia(signatureMedia);
+
+			StudentSessionInfo latestSessionInfo = studentService.getStudentLatestSessionInfo(student.getId());
+			if (latestSessionInfo != null) {
+				student.setLastestSessionInfo(latestSessionInfo);
+
+				Session session = academicService.getSessionById(latestSessionInfo.getSessionId());
+				latestSessionInfo.setSession(session);
+
+				Program program = academicService.getProgramById(latestSessionInfo.getProgramId());
+				latestSessionInfo.setProgram(program);
+			}
+
+			studentInfoCard.setStudent(student);
 
 			tabs.setSelectedTab(null);
 			if (currentTab == null) {
@@ -263,6 +286,7 @@ public class StudentDetailsView extends VerticalLayout {
 
 	private void handlePersonalDetailsRefreshEvent(StudentPersonalDetails.RefreshEvent event) {
 		Student student = event.getStudent();
-		studentInfoCard.setStudentId(student.getId());
+		studentInfoCard.setStudent(student);
+		;
 	}
 }

@@ -35,7 +35,7 @@ import in.co.itlabs.minierp.util.ErpModule;
 import in.co.itlabs.minierp.util.Permission;
 
 @PageTitle(value = "Login")
-@Route(value = "", layout = GuestLayout.class)
+@Route(value = "login", layout = GuestLayout.class)
 public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
 	private static final Logger logger = LoggerFactory.getLogger(LoginView.class);
@@ -52,11 +52,11 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		Image image = new Image("https://picsum.photos/800/600", "miniERP");
 //		image.getStyle().set("objectFit", "contain");
 		image.addClassName("card-photo");
-		image.setWidth("600px");
+		image.setWidth("650px");
 
 		// right id form
 		VerticalLayout loginForm = new VerticalLayout();
-		loginForm.setWidth("400px");
+		loginForm.setWidth("350px");
 		buildLogin(loginForm);
 
 		HorizontalLayout main = new HorizontalLayout();
@@ -125,10 +125,10 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
 	@Override
 	public void beforeEnter(BeforeEnterEvent event) {
-		System.out.println("Login view...nav target: " + event.getNavigationTarget());
-//		System.out.println("Login view...getForwardTargetParameters: "+event.getForwardTargetParameters());
-//		System.out.println("Login view...getForwardTargetRouteParameters: "+event.getForwardTargetRouteParameters());
-//		System.out.println("Login view...getRerouteTargetRouteParameters: "+event.getRerouteTargetRouteParameters());
-		System.out.println("Login view...getRouteParameters: "+event.getRouteParameters());
+		User user = VaadinSession.getCurrent().getAttribute(User.class);
+		if (user != null) {
+			// user already logged in
+			event.forwardTo(DashboardView.class);
+		}
 	}
 }

@@ -208,6 +208,22 @@ public class StudentService {
 		return sessionInfos;
 	}
 
+	public StudentSessionInfo getStudentLatestSessionInfo(int studentId) {
+		StudentSessionInfo sessionInfo = null;
+
+		Sql2o sql2o = databaseService.getSql2o();
+		String sql = "select * from student_session_info where studentId = :studentId and latest = true";
+
+		try (Connection con = sql2o.open()) {
+			sessionInfo = con.createQuery(sql).addParameter("studentId", studentId)
+					.executeAndFetchFirst(StudentSessionInfo.class);
+			con.close();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		return sessionInfo;
+	}
+
 	// update personal details
 	public boolean updateStudentSessionInfo(List<String> messages, StudentSessionInfo studentSessionInfo) {
 		boolean success = false;

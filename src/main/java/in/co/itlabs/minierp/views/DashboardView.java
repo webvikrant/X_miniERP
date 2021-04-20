@@ -20,6 +20,12 @@ public class DashboardView extends VerticalLayout {
 		div = new Div();
 		div.setText("Dashboard");
 
-		add(div);
+		Div div1 = new Div();
+		div1.setText("1. Scholarship applications and their status");
+
+		Div div2 = new Div();
+		div2.setText("2. Certificate applications and their status");
+
+		add(div, div1, div2);
 	}
 }

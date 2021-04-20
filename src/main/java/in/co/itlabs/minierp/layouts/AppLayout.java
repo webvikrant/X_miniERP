@@ -9,8 +9,6 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -97,21 +95,9 @@ public class AppLayout extends VerticalLayout implements RouterLayout, BeforeEnt
 
 	@Override
 	public void beforeEnter(BeforeEnterEvent event) {
-		System.out.println("app layout...Navigation target: "+event.getNavigationTarget());
-//		System.out.println("app layout...getForwardTargetParameters: "+event.getForwardTargetParameters());
-//		System.out.println("app layout...getForwardTargetRouteParameters: "+event.getForwardTargetRouteParameters());
-//		System.out.println("app layout...getRerouteTargetRouteParameters: "+event.getRerouteTargetRouteParameters());
-		System.out.println("app layout...getRouteParameters: "+event.getRouteParameters());
-		
 		User user = event.getUI().getSession().getAttribute(User.class);
 		if (user == null) {
-			Notification.show("AppLayout...beforeEnter...logged-in user: null...redirecting", 5000,
-					Position.TOP_CENTER);
 			event.forwardTo(LoginView.class);
-		} else {
-			Notification.show("AppLayout...beforeEnter...logged-in user: " + user.toString(), 5000,
-					Position.TOP_CENTER);
 		}
-
 	}
 }

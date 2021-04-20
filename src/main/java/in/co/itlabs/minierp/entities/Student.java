@@ -56,12 +56,11 @@ public class Student {
 	// transient
 	private Session admissionSession;
 	private Program admissionProgram;
-
-	private StudentSessionInfo currentSessionInfo;
-
 	private Media photographMedia;
 	private Media signatureMedia;
 
+	private StudentSessionInfo lastestSessionInfo;
+	
 	// ==================================================================================
 	public static final String ID = "id";
 	public static final String NAME = "name";
