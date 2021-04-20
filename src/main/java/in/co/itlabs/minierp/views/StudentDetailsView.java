@@ -15,6 +15,7 @@ import com.vaadin.flow.server.VaadinSession;
 
 import in.co.itlabs.minierp.components.StudentAdmissionDetails;
 import in.co.itlabs.minierp.components.StudentContactDetails;
+import in.co.itlabs.minierp.components.StudentFormatsGenerator;
 import in.co.itlabs.minierp.components.StudentInfoCard;
 import in.co.itlabs.minierp.components.StudentMediaDetails;
 import in.co.itlabs.minierp.components.StudentPersonalDetails;
@@ -29,6 +30,7 @@ import in.co.itlabs.minierp.entities.StudentSessionInfo;
 import in.co.itlabs.minierp.layouts.AppLayout;
 import in.co.itlabs.minierp.services.AcademicService;
 import in.co.itlabs.minierp.services.ContactService;
+import in.co.itlabs.minierp.services.ExecutorService;
 import in.co.itlabs.minierp.services.MediaService;
 import in.co.itlabs.minierp.services.QualificationService;
 import in.co.itlabs.minierp.services.StudentService;
@@ -47,6 +49,7 @@ public class StudentDetailsView extends VerticalLayout {
 	private StudentQualificationDetails qualificationDetails;
 	private StudentMediaDetails mediaDetails;
 	private StudentSessionDetails sessionDetails;
+	private StudentFormatsGenerator formatsGenerator;
 
 	private ComboBox<Student> studentCombo;
 	private SplitLayout splitLayout;
@@ -80,6 +83,9 @@ public class StudentDetailsView extends VerticalLayout {
 	@Inject
 	private MediaService mediaService;
 
+	@Inject
+	private ExecutorService executorService;
+	
 	private int collegeId = 0;
 
 	@PostConstruct
@@ -115,6 +121,7 @@ public class StudentDetailsView extends VerticalLayout {
 		configureTabs();
 
 		splitLayout = new SplitLayout();
+		splitLayout.setWidthFull();
 		configureSplitLayout();
 
 		add(titleDiv, studentCombo, splitLayout);
@@ -188,10 +195,10 @@ public class StudentDetailsView extends VerticalLayout {
 	private void configureSplitLayout() {
 
 		splitLayout.setSplitterPosition(25);
-		splitLayout.setSizeFull();
 		splitLayout.addToPrimary(studentInfoCard);
 
 		VerticalLayout tabsLayout = new VerticalLayout();
+		tabsLayout.setWidth("700px");
 		tabsLayout.setPadding(false);
 		tabsLayout.setSpacing(false);
 		tabsLayout.add(tabs, content);
@@ -280,6 +287,16 @@ public class StudentDetailsView extends VerticalLayout {
 					currentTab = sessionTab;
 				}
 
+			} else if (tab == formatsTab) {
+				if (formatsGenerator == null) {
+					formatsGenerator = new StudentFormatsGenerator(studentService, executorService);
+				}
+				content.add(formatsGenerator);
+				if (student != null) {
+					formatsGenerator.setStudentId(student.getId());
+					currentTab = sessionTab;
+				}
+
 			}
 		});
 	}
@@ -287,6 +304,5 @@ public class StudentDetailsView extends VerticalLayout {
 	private void handlePersonalDetailsRefreshEvent(StudentPersonalDetails.RefreshEvent event) {
 		Student student = event.getStudent();
 		studentInfoCard.setStudent(student);
-		;
 	}
 }

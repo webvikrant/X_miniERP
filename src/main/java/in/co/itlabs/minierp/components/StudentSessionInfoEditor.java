@@ -141,7 +141,7 @@ public class StudentSessionInfoEditor extends VerticalLayout implements Editor {
 
 		sessionFlex.add(sessionField, programCombo, semesterCombo, semesterStatusCombo);
 
-		add(buttonBar, sessionFlex, tabs, content);
+		add(sessionFlex, tabs, content, buttonBar);
 
 		tabs.setSelectedTab(null);
 		tabs.setSelectedTab(hostelTab);
@@ -253,7 +253,6 @@ public class StudentSessionInfoEditor extends VerticalLayout implements Editor {
 
 	private void configureFlex(FlexLayout flexLayout) {
 		flexLayout.setFlexWrap(FlexWrap.WRAP);
-		flexLayout.setAlignItems(Alignment.END);
 		flexLayout.getElement().getStyle().set("padding", "8px");
 		flexLayout.getElement().getStyle().set("gap", "12px");
 	}
@@ -294,6 +293,18 @@ public class StudentSessionInfoEditor extends VerticalLayout implements Editor {
 
 	@Override
 	public void setEditable(boolean editable) {
+
+		programCombo.setReadOnly(!editable);
+		semesterCombo.setReadOnly(!editable);
+		semesterStatusCombo.setReadOnly(!editable);
+
+		hostelCheck.setReadOnly(!editable);
+
+		scholarshipCheck.setReadOnly(!editable);
+		scholarshipFormNoField.setReadOnly(!editable);
+		scholarshipAmountField.setReadOnly(!editable);
+		collegeScholarshipStatusCombo.setReadOnly(!editable);
+		dswoScholarshipStatusCombo.setReadOnly(!editable);
 
 		saveButton.setVisible(editable);
 		cancelButton.setVisible(editable);

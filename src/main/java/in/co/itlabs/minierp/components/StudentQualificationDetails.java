@@ -8,6 +8,8 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
@@ -25,12 +27,14 @@ import in.co.itlabs.minierp.entities.Student;
 import in.co.itlabs.minierp.services.AcademicService;
 import in.co.itlabs.minierp.services.QualificationService;
 import in.co.itlabs.minierp.services.StudentService;
+import in.co.itlabs.minierp.util.Editor;
 
-public class StudentQualificationDetails extends VerticalLayout {
+public class StudentQualificationDetails extends VerticalLayout implements Editor {
 
 	// ui
 
 	private Checkbox editCheck;
+
 	private TextField interPhysicsPercentField;
 	private TextField interChemistryPercentField;
 	private TextField interMathematicsPercentField;
@@ -41,7 +45,7 @@ public class StudentQualificationDetails extends VerticalLayout {
 	private TextField pcbPercentField;
 
 	private Button createQualificationButton;
-	
+
 	private Grid<Qualification> grid;
 
 	private Button saveButton;
@@ -57,15 +61,18 @@ public class StudentQualificationDetails extends VerticalLayout {
 	private StudentService studentService;
 	private QualificationService qualificationService;
 
-	private int studentId;
 	private Qualification qualification;
 	private final List<String> messages = new ArrayList<String>();
 
-	public StudentQualificationDetails(StudentService studentService, QualificationService qualificationService, AcademicService academicService) {
+	private Student student;
+
+	public StudentQualificationDetails(StudentService studentService, QualificationService qualificationService,
+			AcademicService academicService) {
 		this.studentService = studentService;
 		this.qualificationService = qualificationService;
 
 		editCheck = new Checkbox("Edit");
+		configureEditCheck();
 
 		interEnglishPercentField = new BigDecimalField("English (%)");
 		interEnglishPercentField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
@@ -88,8 +95,10 @@ public class StudentQualificationDetails extends VerticalLayout {
 		pcbPercentField = new TextField("PCB (%)");
 		configureTextField(pcbPercentField);
 
-		createQualificationButton = new Button("Add", VaadinIcon.PLUS.create());
-		configureCreateQualificationButton();
+		createQualificationButton = new Button("Add Qualification", VaadinIcon.PLUS.create());
+		HorizontalLayout menuBar = new HorizontalLayout();
+		menuBar.setWidthFull();
+		buildMenuBar(menuBar);
 
 		grid = new Grid<>(Qualification.class);
 		configureGrid();
@@ -118,14 +127,8 @@ public class StudentQualificationDetails extends VerticalLayout {
 
 		flex2.add(pcmPercentField, pcbPercentField);
 
-		add(editCheck, buttonBar, flex1, flex2, createQualificationButton, grid);
+		add(editCheck, flex1, flex2, buttonBar, menuBar, grid);
 
-		setAlignSelf(Alignment.CENTER, buttonBar);
-
-		setAlignSelf(Alignment.END, createQualificationButton);
-
-		reload();
-		
 		// dialog related
 		qualificationEditor = new QualificationEditor(academicService);
 		qualificationEditor.addListener(QualificationEditor.SaveEvent.class, this::handleSaveQualificationEvent);
@@ -138,9 +141,14 @@ public class StudentQualificationDetails extends VerticalLayout {
 		configureDialog();
 	}
 
+	private void configureEditCheck() {
+		editCheck.addValueChangeListener(e -> {
+			setEditable(e.getValue());
+		});
+	}
+
 	private void configureTextField(TextField textField) {
 		textField.setWidth("100px");
-		textField.setReadOnly(true);
 	}
 
 	private void configureFlex(FlexLayout flexLayout) {
@@ -185,20 +193,26 @@ public class StudentQualificationDetails extends VerticalLayout {
 
 	}
 
-	private void reloadGrid() {
-		grid.setItems(qualificationService.getQualifications(studentId));
-	}
-
-	private void configureCreateQualificationButton() {
+	private void buildMenuBar(HorizontalLayout root) {
+		root.setAlignItems(Alignment.END);
+		
+		Div gridLabel = new Div();
+		gridLabel.addClassName("small-text");
+		gridLabel.setText("Academic Qualifications");
+		
 		createQualificationButton.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
 
 		createQualificationButton.addClickListener(e -> {
 			dialog.removeAll();
 			dialog.add(qualificationEditor);
 			dialog.open();
-			qualification.setStudentId(studentId);
+			qualification.setStudentId(student.getId());
 			qualificationEditor.setAcademicQualification(qualification);
 		});
+		
+		Span blank = new Span();
+		root.add(gridLabel, blank, createQualificationButton);
+		root.expand(blank);
 	}
 
 	private void configureDialog() {
@@ -218,6 +232,7 @@ public class StudentQualificationDetails extends VerticalLayout {
 				boolean success = studentService.updateStudentInterMarks(messages, student);
 				if (success) {
 					Notification.show("Inter marks updated successfully", 5000, Position.TOP_CENTER);
+					setStudentId(student.getId());
 				} else {
 					Notification.show(messages.toString(), 5000, Position.TOP_CENTER);
 				}
@@ -226,20 +241,23 @@ public class StudentQualificationDetails extends VerticalLayout {
 
 		cancelButton.addClickListener(e -> {
 //			fireEvent(new CancelEvent(this, binder.getBean()));
+			setStudentId(student.getId());
 		});
 
 		root.add(saveButton, cancelButton);
 	}
 
-	public void setStudentId(int id) {
-		this.studentId = id;
-		reload();
-	}
-
-	private void reload() {
-		Student student = studentService.getStudentById(studentId);
+	public void setStudentId(int studentId) {
+		student = studentService.getStudentById(studentId);
 		binder.setBean(student);
 		reloadGrid();
+
+		editCheck.setValue(true);
+		editCheck.setValue(false);
+	}
+
+	private void reloadGrid() {
+		grid.setItems(qualificationService.getQualifications(student.getId()));
 	}
 
 	public void handleSaveQualificationEvent(QualificationEditor.SaveEvent event) {
@@ -251,7 +269,7 @@ public class StudentQualificationDetails extends VerticalLayout {
 			if (id > 0) {
 				Notification.show("Qualification added successfully", 3000, Position.TOP_CENTER);
 				qualification.clear();
-				qualification.setStudentId(studentId);
+				qualification.setStudentId(student.getId());
 				qualificationEditor.setAcademicQualification(qualification);
 				reloadGrid();
 			}
@@ -264,6 +282,21 @@ public class StudentQualificationDetails extends VerticalLayout {
 
 	public void handleCloseAcademicQualificationEvent(QualificationEditor.CancelEvent event) {
 		dialog.close();
+	}
+
+	@Override
+	public void setEditable(boolean enabled) {
+		interPhysicsPercentField.setReadOnly(!enabled);
+		interChemistryPercentField.setReadOnly(!enabled);
+		interMathematicsPercentField.setReadOnly(!enabled);
+		interBiologyPercentField.setReadOnly(!enabled);
+		interEnglishPercentField.setReadOnly(!enabled);
+
+		pcmPercentField.setReadOnly(!enabled);
+		pcbPercentField.setReadOnly(!enabled);
+
+		saveButton.setVisible(enabled);
+		cancelButton.setVisible(enabled);
 	}
 
 }

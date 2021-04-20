@@ -51,6 +51,7 @@ public class StudentSessionDetails extends VerticalLayout {
 
 			StudentSessionInfoEditor sessionInfoEditor = new StudentSessionInfoEditor(academicService);
 			sessionInfoEditor.setEditable(false);
+			sessionInfoEditor.setWidth("600px");
 
 			sessionInfoEditor.addListener(StudentSessionInfoEditor.SaveEvent.class, this::handleSaveEvent);
 

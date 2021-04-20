@@ -64,6 +64,7 @@ public class StudentPersonalDetails extends VerticalLayout {
 
 	private Button saveButton;
 	private Button cancelButton;
+//	private Button deleteButton;
 
 	private Binder<Student> binder;
 
@@ -71,12 +72,14 @@ public class StudentPersonalDetails extends VerticalLayout {
 	private StudentService studentService;
 	private MediaService mediaService;
 	private final List<String> messages = new ArrayList<String>();
+	private Student student;
 
 	public StudentPersonalDetails(StudentService studentService, MediaService mediaService) {
 		this.studentService = studentService;
 		this.mediaService = mediaService;
 
 		editCheck = new Checkbox("Edit");
+		configureEditCheck();
 
 		photographSelect = new Select<Media>();
 		configurePhotographSelect();
@@ -122,6 +125,7 @@ public class StudentPersonalDetails extends VerticalLayout {
 
 		saveButton = new Button("Save", VaadinIcon.CHECK.create());
 		cancelButton = new Button("Cancel", VaadinIcon.CLOSE.create());
+//		deleteButton = new Button("Delete", VaadinIcon.TRASH.create());
 
 		binder = new Binder<>(Student.class);
 
@@ -136,6 +140,7 @@ public class StudentPersonalDetails extends VerticalLayout {
 
 		HorizontalLayout buttonBar = new HorizontalLayout();
 		buildButtonBar(buttonBar);
+		buttonBar.setWidthFull();
 
 		FlexLayout flex1 = new FlexLayout();
 		configureFlex(flex1);
@@ -162,8 +167,15 @@ public class StudentPersonalDetails extends VerticalLayout {
 		flex5.add(fatherNameField, fatherOccupationCombo);
 		flex6.add(localGuardianNameField, relationCombo);
 
-		add(editCheck, buttonBar, flex1, flex2, flex3, flex4, flex5, flex6);
+		add(editCheck, flex1, flex2, flex3, flex4, flex5, flex6, buttonBar);
 		setAlignSelf(Alignment.CENTER, buttonBar);
+
+	}
+
+	private void configureEditCheck() {
+		editCheck.addValueChangeListener(e -> {
+			setEditable(e.getValue());
+		});
 	}
 
 	private void configurePhotographSelect() {
@@ -283,7 +295,7 @@ public class StudentPersonalDetails extends VerticalLayout {
 		saveButton.addClickListener(e -> {
 			if (binder.validate().isOk()) {
 
-				Student student = binder.getBean();
+				student = binder.getBean();
 
 				Media photographMedia = student.getPhotographMedia();
 				Media signatureMedia = student.getSignatureMedia();
@@ -299,6 +311,8 @@ public class StudentPersonalDetails extends VerticalLayout {
 				if (success) {
 					Notification.show("Personal details saved successfully", 3000, Position.TOP_CENTER);
 					setStudentId(student.getId());
+					setEditable(false);
+					fireEvent(new RefreshEvent(this, student));
 				} else {
 					Notification.show(messages.toString(), 3000, Position.TOP_CENTER);
 				}
@@ -307,13 +321,16 @@ public class StudentPersonalDetails extends VerticalLayout {
 
 		cancelButton.addClickListener(e -> {
 //			fireEvent(new CancelEvent(this, binder.getBean()));
+			setStudentId(student.getId());
 		});
+
+//		deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
 		root.add(saveButton, cancelButton);
 	}
 
 	public void setStudentId(int studentId) {
-		Student student = studentService.getStudentById(studentId);
+		student = studentService.getStudentById(studentId);
 
 		List<Media> photoMedias = mediaService.getImageMedias(studentId);
 
@@ -326,9 +343,34 @@ public class StudentPersonalDetails extends VerticalLayout {
 		student.setSignatureMedia(signatureMedia);
 
 		binder.setBean(student);
+
+		editCheck.setValue(true);
+		editCheck.setValue(false);
 	}
 
 	public void setEditable(boolean editable) {
+		photographSelect.setReadOnly(!editable);
+		signatureSelect.setReadOnly(!editable);
+
+		nameField.setReadOnly(!editable);
+		birthDatePicker.setReadOnly(!editable);
+		genderRadio.setReadOnly(!editable);
+
+		motherNameField.setReadOnly(!editable);
+		fatherNameField.setReadOnly(!editable);
+		localGuardianNameField.setReadOnly(!editable);
+
+		religionCombo.setReadOnly(!editable);
+		casteCombo.setReadOnly(!editable);
+		categoryCombo.setReadOnly(!editable);
+		relationCombo.setReadOnly(!editable);
+
+		motherOccupationCombo.setReadOnly(!editable);
+		fatherOccupationCombo.setReadOnly(!editable);
+
+		saveButton.setVisible(editable);
+		cancelButton.setVisible(editable);
+//		deleteButton.setVisible(editable);
 
 	}
 

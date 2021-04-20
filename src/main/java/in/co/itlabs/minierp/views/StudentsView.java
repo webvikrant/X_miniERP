@@ -31,6 +31,7 @@ import in.co.itlabs.minierp.entities.College;
 import in.co.itlabs.minierp.entities.Student;
 import in.co.itlabs.minierp.layouts.AppLayout;
 import in.co.itlabs.minierp.services.AcademicService;
+import in.co.itlabs.minierp.services.ExecutorService;
 import in.co.itlabs.minierp.services.StudentService;
 import in.co.itlabs.minierp.util.StudentReport;
 import in.co.itlabs.minierp.util.StudentFilterParams;
@@ -57,6 +58,9 @@ public class StudentsView extends VerticalLayout {
 	@Inject
 	private AcademicService academicService;
 
+	@Inject
+	private ExecutorService executorService;
+	
 	private int collegeId = 0;
 	private StudentFilterParams filterParams;
 
@@ -77,6 +81,8 @@ public class StudentsView extends VerticalLayout {
 		dialog = new Dialog();
 		dialog.setModal(true);
 		dialog.setDraggable(true);
+		
+		exporter = new StudentsExporter(studentService, executorService);
 
 		newStudentForm = new NewStudentForm(academicService);
 		newStudentForm.setStudent(new Student());

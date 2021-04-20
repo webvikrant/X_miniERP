@@ -6,19 +6,25 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
 import in.co.itlabs.minierp.entities.College;
+import in.co.itlabs.minierp.entities.Student;
 import in.co.itlabs.minierp.services.AcademicService;
+import in.co.itlabs.minierp.views.DashboardView;
 import in.co.itlabs.minierp.views.LoginView;
+import in.co.itlabs.minierp.views.StudentDetailsView;
+import in.co.itlabs.minierp.views.StudentsView;
 
 public class NavBar extends HorizontalLayout {
 
@@ -58,6 +64,8 @@ public class NavBar extends HorizontalLayout {
 	}
 
 	private void configureButtons() {
+		logoutButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+		;
 		logoutButton.addClickListener(e -> {
 			VaadinSession.getCurrent().getSession().invalidate();
 			UI.getCurrent().navigate(LoginView.class);
@@ -67,14 +75,15 @@ public class NavBar extends HorizontalLayout {
 	private void configureMenuBar() {
 
 		menuBar.setOpenOnHover(true);
+		menuBar.addThemeVariants(MenuBarVariant.LUMO_PRIMARY);
 
 		MenuItem mainMenuItem = menuBar.addItem(VaadinIcon.MENU.create());
 		mainMenuItem.add("Menu");
 
 		SubMenu subMenu = mainMenuItem.getSubMenu();
-		subMenu.addItem("Dashboard");
-		subMenu.addItem("Students", e -> UI.getCurrent().navigate("students"));
-		subMenu.addItem("Student details", e -> UI.getCurrent().navigate("student-details"));
+		subMenu.addItem("Dashboard", e -> UI.getCurrent().navigate(DashboardView.class));
+		subMenu.addItem("Students", e -> UI.getCurrent().navigate(StudentsView.class));
+		subMenu.addItem("Student details", e -> UI.getCurrent().navigate(StudentDetailsView.class));
 
 	}
 
@@ -91,11 +100,11 @@ public class NavBar extends HorizontalLayout {
 
 		collegeSelect.setValue(VaadinSession.getCurrent().getAttribute(College.class));
 
-//		collegeSelect.addValueChangeListener(e -> {
-//			VaadinSession.getCurrent().setAttribute(College.class, e.getValue());
-//			VaadinSession.getCurrent().setAttribute(Student.class, null);
-//			UI.getCurrent().getPage().reload();
-//		});
+		collegeSelect.addValueChangeListener(e -> {
+			VaadinSession.getCurrent().setAttribute(College.class, e.getValue());
+			VaadinSession.getCurrent().setAttribute(Student.class, null);
+			UI.getCurrent().getPage().reload();
+		});
 
 	}
 

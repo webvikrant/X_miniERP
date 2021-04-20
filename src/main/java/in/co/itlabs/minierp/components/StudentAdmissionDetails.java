@@ -38,8 +38,6 @@ public class StudentAdmissionDetails extends VerticalLayout {
 
 	private RadioButtonGroup<AdmissionMode> admissionModeRadio;
 
-	private Checkbox hostelCheck = new Checkbox("Hostel");
-
 	private TextField prnNofield;
 	private TextField admissionIdField;
 
@@ -55,12 +53,15 @@ public class StudentAdmissionDetails extends VerticalLayout {
 
 	private AcademicService academicService;
 	private StudentService studentService;
-
+	
+	private Student student;
+	
 	public StudentAdmissionDetails(StudentService studentService, AcademicService academicService) {
 		this.studentService = studentService;
 		this.academicService = academicService;
 
 		editCheck = new Checkbox("Edit");
+		configureEditCheck();
 
 		sessionCombo = new ComboBox<Session>();
 		configureSessionCombo();
@@ -98,6 +99,7 @@ public class StudentAdmissionDetails extends VerticalLayout {
 
 		HorizontalLayout buttonBar = new HorizontalLayout();
 		buildButtonBar(buttonBar);
+		buttonBar.setWidthFull();
 
 		FlexLayout flex1 = new FlexLayout();
 		configureFlex(flex1);
@@ -119,11 +121,17 @@ public class StudentAdmissionDetails extends VerticalLayout {
 
 		flex1.add(prnNofield, admissionIdField, admissionModeRadio);
 		flex2.add(sessionCombo, programCombo, stageCombo);
-		flex3.add(admissionCategoryCombo, hostelCheck);
+		flex3.add(admissionCategoryCombo);
 		flex4.add(upseeRollNoField, upseeRankField);
 
-		add(editCheck, buttonBar, flex1, flex2, flex3, flex4, flex5, flex6);
+		add(editCheck, flex1, flex2, flex3, flex4, flex5, flex6, buttonBar);
 		setAlignSelf(Alignment.CENTER, buttonBar);
+	}
+
+	private void configureEditCheck() {
+		editCheck.addValueChangeListener(e -> {
+			setEditable(e.getValue());
+		});
 	}
 
 	private void configureSessionCombo() {
@@ -192,24 +200,44 @@ public class StudentAdmissionDetails extends VerticalLayout {
 		saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 		saveButton.addClickListener(e -> {
 			if (binder.validate().isOk()) {
-				fireEvent(new SaveEvent(this, binder.getBean()));
+//				fireEvent(new SaveEvent(this, binder.getBean()));
+				// call the studentService to update the details
 			}
 		});
 
 		cancelButton.addClickListener(e -> {
-			fireEvent(new CancelEvent(this, binder.getBean()));
+//			fireEvent(new CancelEvent(this, binder.getBean()));
+			setStudentId(student.getId());
 		});
 
 		root.add(saveButton, cancelButton);
 	}
 
 	public void setStudentId(int studentId) {
-		Student student = studentService.getStudentById(studentId);
+		this.student = studentService.getStudentById(studentId);
+		
 		binder.setBean(student);
+
+		editCheck.setValue(true);
+		editCheck.setValue(false);
 	}
 
 	public void setEditable(boolean editable) {
+		sessionCombo.setReadOnly(!editable);
+		programCombo.setReadOnly(!editable);
+		stageCombo.setReadOnly(!editable);
+		admissionCategoryCombo.setReadOnly(!editable);
 
+		admissionModeRadio.setReadOnly(!editable);
+
+		prnNofield.setReadOnly(!editable);
+		admissionIdField.setReadOnly(!editable);
+
+		upseeRollNoField.setReadOnly(!editable);
+		upseeRankField.setReadOnly(!editable);
+
+		saveButton.setVisible(editable);
+		cancelButton.setVisible(editable);
 	}
 
 	public static abstract class StudentAdmissionEvent extends ComponentEvent<StudentAdmissionDetails> {

@@ -38,7 +38,7 @@ public class StudentFilterForm extends VerticalLayout {
 		queryField = new TextField("Name /Roll No/ Admission No");
 		queryField.setWidthFull();
 
-		okButton = new Button("Search", VaadinIcon.SEARCH.create());
+		okButton = new Button("Filter", VaadinIcon.FILTER.create());
 		configureOkButton();
 
 		clearButton = new Button("Clear", VaadinIcon.CLOSE.create());

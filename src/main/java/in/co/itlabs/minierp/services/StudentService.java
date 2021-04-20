@@ -136,9 +136,10 @@ public class StudentService {
 				}
 
 				query = "%" + query.toLowerCase() + "%";
-				studentSql = "select * from student where collegeId = :collegeId and lower(name) like :name";
+				studentSql = "select * from student where collegeId = :collegeId and lower(name) like :name"
+						+ " or lower(admissionId) like :admissionId or lower(prnNo) like :prnNo";
 				students = con.createQuery(studentSql).addParameter("collegeId", collegeId).addParameter("name", query)
-						.executeAndFetch(Student.class);
+						.addParameter("admissionId", query).addParameter("prnNo", query).executeAndFetch(Student.class);
 			}
 
 			con.close();

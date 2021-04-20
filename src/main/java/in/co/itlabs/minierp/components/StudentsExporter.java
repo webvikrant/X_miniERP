@@ -10,9 +10,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -24,7 +21,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.google.common.io.ByteStreams;
-import com.vaadin.cdi.annotation.UIScoped;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -45,13 +41,8 @@ import in.co.itlabs.minierp.services.ExecutorService;
 import in.co.itlabs.minierp.services.StudentService;
 import in.co.itlabs.minierp.util.StudentFilterParams;
 
-@UIScoped
 public class StudentsExporter extends VerticalLayout {
 
-	@Inject
-	private ExecutorService executorService;
-
-	@Inject
 	private StudentService studentService;
 
 	private int collegeId = 0;
@@ -82,9 +73,9 @@ public class StudentsExporter extends VerticalLayout {
 //	private List<Student> students;
 	private StudentFilterParams filterParams;
 
-	@PostConstruct
-	public void init() {
-
+	public StudentsExporter(StudentService studentService, ExecutorService executorService) {
+		this.studentService = studentService;
+		
 		College college = VaadinSession.getCurrent().getAttribute(College.class);
 		if (college != null) {
 			collegeId = college.getId();
