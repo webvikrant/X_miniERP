@@ -42,12 +42,12 @@ public class Application extends CdiVaadinServlet
 
 	@Override
 	public void sessionInit(SessionInitEvent event) throws ServiceException {
-		logger.info("Session initialized, id: "+event.getSession().getSession().getId());
+		logger.info("Session initialized, id: " + event.getSession().getSession().getId());
 	}
 
 	@Override
 	public void sessionDestroy(SessionDestroyEvent event) {
-		logger.info("Session destroyed, id: "+event.getSession().getSession().getId());;
+		logger.info("Session destroyed, id: " + event.getSession().getSession().getId());
 	}
 
 }

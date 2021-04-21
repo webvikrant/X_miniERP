@@ -3,7 +3,9 @@ package in.co.itlabs.minierp.layouts;
 import java.util.Objects;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Text;
@@ -23,7 +25,6 @@ import in.co.itlabs.minierp.components.Footer;
 import in.co.itlabs.minierp.components.Header;
 import in.co.itlabs.minierp.components.NavBar;
 import in.co.itlabs.minierp.entities.College;
-import in.co.itlabs.minierp.services.AcademicService;
 import in.co.itlabs.minierp.services.AuthService.AuthenticatedUser;
 import in.co.itlabs.minierp.views.LoginView;
 
@@ -41,17 +42,16 @@ public class AppLayout extends VerticalLayout implements RouterLayout, BeforeEnt
 	private Footer footer;
 
 	// non-ui
-
-	@Inject
-	private AcademicService academicService;
+	private static final Logger logger = LoggerFactory.getLogger(AppLayout.class);
 
 	@PostConstruct
 	public void init() {
-
+		logger.info("init() invoked...");
+		
 		header = new Header();
 		header.setWidthFull();
 
-		navBar = new NavBar(academicService);
+		navBar = new NavBar();
 		navBar.setWidthFull();
 
 		content = new VerticalLayout();
@@ -75,13 +75,11 @@ public class AppLayout extends VerticalLayout implements RouterLayout, BeforeEnt
 
 	@Override
 	public void removeRouterLayoutContent(HasElement oldContent) {
-		// TODO Auto-generated method stub
 		content.getElement().removeAllChildren();
 	}
 
 	@Override
 	public void showRouterLayoutContent(HasElement newContent) {
-		// TODO Auto-generated method stub
 		if (newContent != null) {
 			College college = VaadinSession.getCurrent().getAttribute(College.class);
 			if (college == null) {

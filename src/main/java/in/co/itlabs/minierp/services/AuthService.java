@@ -1,9 +1,11 @@
 package in.co.itlabs.minierp.services;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -11,14 +13,15 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sql2o.Connection;
+import org.sql2o.Query;
 import org.sql2o.Sql2o;
 
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import in.co.itlabs.minierp.entities.College;
+import in.co.itlabs.minierp.entities.User;
 import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @ApplicationScoped
 public class AuthService {
@@ -43,15 +46,6 @@ public class AuthService {
 			this.canUpdate = canUpdate;
 			this.canDelete = canDelete;
 		}
-	}
-
-	@Data
-	@NoArgsConstructor
-	private class User {
-		private int id;
-		private String name;
-		private String username;
-		private String passwordHash;
 	}
 
 	@Getter
@@ -98,20 +92,33 @@ public class AuthService {
 	// =================================================================================
 
 	// create
-	public int createUser(List<String> messages, String name, String username, String password) {
+	public int createUser(List<String> messages, User user) {
 
 		int newUserId = 0;
 		Sql2o sql2o = databaseService.getSql2o();
-		String sql = "insert into user (name, username, passwordHash)" + " values(:name, :username, :passwordHash)";
+		String insertUserSql = "insert into user (name, username, passwordHash, disabled, emailId)"
+				+ " values(:name, :username, :passwordHash, :disabled, :emailId)";
 
-		char[] passwordChars = password.toCharArray();
+		String insertUserCollegeSql = "insert into user_college(userId, collegeId) values(:userId, :collegeId)";
+
+		char[] passwordChars = user.getPassword().toCharArray();
 		String passwordHash = argon2.hash(4, 16 * 1024, 1, passwordChars);
 
-		try (Connection con = sql2o.open()) {
-			int userId = con.createQuery(sql).addParameter("name", name).addParameter("username", username)
-					.addParameter("passwordHash", passwordHash).executeUpdate().getKey(Integer.class);
+		try (Connection con = sql2o.beginTransaction()) {
+			int userId = con.createQuery(insertUserSql).addParameter("name", user.getName())
+					.addParameter("username", user.getUsername()).addParameter("passwordHash", passwordHash)
+					.addParameter("disabled", false).addParameter("emailId", user.getEmailId()).executeUpdate()
+					.getKey(Integer.class);
 
-			con.close();
+			Set<College> colleges = user.getColleges();
+			if (colleges != null && !colleges.isEmpty()) {
+				Query query = con.createQuery(insertUserCollegeSql);
+				for (College college : colleges) {
+					query.addParameter("userId", userId).addParameter("collegeId", college.getId()).executeUpdate();
+				}
+			}
+
+			con.commit();
 			newUserId = userId;
 		} catch (Exception e) {
 			logger.debug(e.getMessage());
@@ -121,14 +128,20 @@ public class AuthService {
 	}
 
 	// read many
-	public List<User> getAllUsers() {
+	public List<User> getAllUsers(String queryString) {
 		List<User> users = null;
 
+		if (queryString == null) {
+			queryString = "";
+		}
+
+		queryString = "%" + queryString.toLowerCase() + "%";
 		Sql2o sql2o = databaseService.getSql2o();
 
 		try (Connection con = sql2o.open()) {
-			String sql = "select * from user";
-			users = con.createQuery(sql).executeAndFetch(User.class);
+			String sql = "select * from user where lower(name) like :name or lower(username) like :username";
+			users = con.createQuery(sql).addParameter("name", queryString).addParameter("username", queryString)
+					.executeAndFetch(User.class);
 			con.close();
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
@@ -164,22 +177,31 @@ public class AuthService {
 			if (user != null) {
 				char[] passwordChars = credentials.password.toCharArray();
 
-				boolean success = argon2.verify(user.passwordHash, passwordChars);
+				boolean success = argon2.verify(user.getPasswordHash(), passwordChars);
 
 				if (success) {
 
-					// ========================================================================================
-					// CHANGE THIS -- hard coded for the time being -- CHANGE THIS
-					// ========================================================================================
+					String userCollegeSql = "select collegeId from user_college where userId = :userId";
+					List<Integer> collegeIds = con.createQuery(userCollegeSql).addParameter("userId", user.getId())
+							.executeScalarList(Integer.class);
 
-					List<College> colleges = academicService.getAllColleges();
+					List<College> colleges = new ArrayList<College>();
+					String collegeSql = "select * from college where id = :id";
+					for (int collegeId : collegeIds) {
+						College college = con.createQuery(collegeSql).addParameter("id", collegeId)
+								.executeAndFetchFirst(College.class);
+						colleges.add(college);
+					}
 
+					// ==============================================================
+					// hard coded - CHANGE THIS
+					// ==============================================================
 					Map<ErpModule, Permission> accessMap = new HashMap<>();
 					accessMap.put(ErpModule.Students, new Permission(true, true, true, true));
 					accessMap.put(ErpModule.Student_PersonalDetails, new Permission(true, true, true, true));
 					accessMap.put(ErpModule.Student_ContactDetails, new Permission(true, true, true, true));
 
-					authUser = new AuthenticatedUser(false, user.id, user.name, colleges, accessMap);
+					authUser = new AuthenticatedUser(false, user.getId(), user.getName(), colleges, accessMap);
 				}
 			}
 			con.close();

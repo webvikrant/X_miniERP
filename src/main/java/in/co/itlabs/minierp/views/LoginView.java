@@ -6,9 +6,13 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.simplejavamail.api.email.Email;
+import org.simplejavamail.api.mailer.Mailer;
+import org.simplejavamail.email.EmailBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -32,6 +36,7 @@ import com.vaadin.flow.server.VaadinSession;
 import in.co.itlabs.minierp.entities.College;
 import in.co.itlabs.minierp.layouts.GuestLayout;
 import in.co.itlabs.minierp.services.AuthService;
+import in.co.itlabs.minierp.services.EmailService;
 import in.co.itlabs.minierp.services.AuthService.AuthenticatedUser;
 import in.co.itlabs.minierp.services.AuthService.Credentials;
 
@@ -53,6 +58,9 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
 	@Inject
 	private AuthService authService;
+
+	@Inject
+	private EmailService emailService;
 
 	private final List<String> messages = new ArrayList<String>();
 
@@ -102,6 +110,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		H2 clientName = new H2("IEC");
 
 		loginButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+		loginButton.addClickShortcut(Key.ENTER);
 		loginButton.addClickListener(e -> {
 			// store the user and his/her privileges in session
 			// check if any colleges exist.
@@ -135,6 +144,18 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 		});
 
 		forgotPasswordButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+		forgotPasswordButton.addClickListener(e -> {
+			// CHANGE THIS
+			// send test email
+			String password = "testing 123";
+			Email message = EmailBuilder.startingBlank().from("miniERP", "miniERP@itlabs.co.in")
+					.to("Vikrant Thakur", "webvikrant@gmail.com").withSubject("Test email")
+					.withPlainText("Your password is: " + password).buildEmail();
+
+			Mailer mailer = emailService.getMailer();
+			mailer.sendMail(message);
+			Notification.show("Email sent", 5000, Position.TOP_CENTER);
+		});
 
 		HorizontalLayout buttonBar = new HorizontalLayout();
 		Span blank = new Span();

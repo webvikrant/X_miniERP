@@ -20,7 +20,6 @@ import com.vaadin.flow.shared.Registration;
 
 import in.co.itlabs.minierp.entities.College;
 import in.co.itlabs.minierp.entities.Student;
-import in.co.itlabs.minierp.services.AcademicService;
 import in.co.itlabs.minierp.services.AuthService.AuthenticatedUser;
 import in.co.itlabs.minierp.views.DashboardView;
 import in.co.itlabs.minierp.views.LoginView;
@@ -36,11 +35,14 @@ public class NavBar extends HorizontalLayout {
 	private Button logoutButton;
 
 	// non-ui
+	private final AuthenticatedUser authUser;
 
-	private AcademicService academicService;
+	public NavBar() {
 
-	public NavBar(AcademicService academicService) {
-		this.academicService = academicService;
+		authUser = VaadinSession.getCurrent().getAttribute(AuthenticatedUser.class);
+		if (authUser == null) {
+			return;
+		}
 
 		setAlignItems(Alignment.CENTER);
 
@@ -61,15 +63,12 @@ public class NavBar extends HorizontalLayout {
 
 		add(collegeSelect, menuBar, blank, userButton, logoutButton);
 		expand(blank);
-
 	}
 
 	private void configureButtons() {
-		AuthenticatedUser authuUser = VaadinSession.getCurrent().getAttribute(AuthenticatedUser.class);
-		if (authuUser != null) {
-			userButton.setText(authuUser.getName());
-		}
 
+		userButton.setText(authUser.getName());
+		
 		logoutButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
 		logoutButton.addClickListener(e -> {
 			VaadinSession.getCurrent().getSession().invalidate();
@@ -96,7 +95,8 @@ public class NavBar extends HorizontalLayout {
 		collegeSelect.setWidth("250px");
 		collegeSelect.setPlaceholder("Select a college");
 
-		List<College> colleges = academicService.getAllColleges();
+//		List<College> colleges = academicService.getAllColleges();
+		List<College> colleges = authUser.getColleges();
 		collegeSelect.setItems(colleges);
 
 		collegeSelect.setItemLabelGenerator(college -> {
@@ -137,4 +137,5 @@ public class NavBar extends HorizontalLayout {
 
 		return getEventBus().addListener(eventType, listener);
 	}
+
 }
