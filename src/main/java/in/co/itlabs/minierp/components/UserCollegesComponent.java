@@ -17,7 +17,7 @@ import in.co.itlabs.minierp.entities.User;
 import in.co.itlabs.minierp.services.AcademicService;
 import in.co.itlabs.minierp.services.AuthService;
 
-public class UserCollegeDetails extends VerticalLayout {
+public class UserCollegesComponent extends VerticalLayout {
 
 	// ui
 	private CheckboxGroup<College> collegeChecks;
@@ -35,7 +35,7 @@ public class UserCollegeDetails extends VerticalLayout {
 	private int userId;
 	private final List<String> messages = new ArrayList<String>();
 
-	public UserCollegeDetails(AuthService authService, AcademicService academicService) {
+	public UserCollegesComponent(AuthService authService, AcademicService academicService) {
 		this.authService = authService;
 		this.academicService = academicService;
 

@@ -1,5 +1,6 @@
 package in.co.itlabs.minierp.entities;
 
+import java.util.List;
 import java.util.Set;
 
 import in.co.itlabs.minierp.util.Entity;
@@ -23,6 +24,7 @@ public class User {
 	// transient
 	private String entityName;
 	private Set<College> colleges;
+	private List<UserErpModule> userErpModules;
 
 	public String getCollegesString() {
 		String collegesString = "";

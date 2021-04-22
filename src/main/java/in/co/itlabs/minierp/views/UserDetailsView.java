@@ -13,8 +13,9 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
-import in.co.itlabs.minierp.components.UserCollegeDetails;
+import in.co.itlabs.minierp.components.UserCollegesComponent;
 import in.co.itlabs.minierp.components.UserInfoCard;
+import in.co.itlabs.minierp.components.UserErpModulesComponent;
 import in.co.itlabs.minierp.entities.User;
 import in.co.itlabs.minierp.layouts.AppLayout;
 import in.co.itlabs.minierp.services.AcademicService;
@@ -28,14 +29,15 @@ public class UserDetailsView extends VerticalLayout {
 
 	private UserInfoCard userInfoCard;
 
-	private UserCollegeDetails collegeDetails;
+	private UserCollegesComponent userCollegesComponent;
+	private UserErpModulesComponent userErpModulesComponent;
 
 	private ComboBox<User> userCombo;
 	private SplitLayout splitLayout;
 
 	private Tabs tabs;
 	private Tab collegesTab;
-	private Tab modulesTab;
+	private Tab erpModulesTab;
 
 	private VerticalLayout content;
 	private Tab currentTab = null;
@@ -64,7 +66,7 @@ public class UserDetailsView extends VerticalLayout {
 
 		tabs = new Tabs();
 		collegesTab = new Tab("Colleges");
-		modulesTab = new Tab("Modules");
+		erpModulesTab = new Tab("Modules");
 
 		content = new VerticalLayout();
 
@@ -142,31 +144,31 @@ public class UserDetailsView extends VerticalLayout {
 		content.setSpacing(false);
 
 		tabs.add(collegesTab);
-		tabs.add(modulesTab);
+		tabs.add(erpModulesTab);
 
 		tabs.addSelectedChangeListener(event -> {
 			content.removeAll();
 			User user = VaadinSession.getCurrent().getAttribute(User.class);
 			Tab tab = event.getSelectedTab();
 			if (tab == collegesTab) {
-				if (collegeDetails == null) {
-					collegeDetails = new UserCollegeDetails(authService, academicService);
+				if (userCollegesComponent == null) {
+					userCollegesComponent = new UserCollegesComponent(authService, academicService);
 				}
-				content.add(collegeDetails);
+				content.add(userCollegesComponent);
 				if (user != null) {
-					collegeDetails.setUserId(user.getId());
+					userCollegesComponent.setUserId(user.getId());
 					currentTab = collegesTab;
 				}
 
-//			} else if (tab == modulesTab) {
-//				if (contactDetails == null) {
-//					contactDetails = new StudentContactDetails(authService, contactService);
-//				}
-//				content.add(contactDetails);
-//				if (user != null) {
-//					contactDetails.setStudentId(user.getId());
-//					currentTab = modulesTab;
-//				}
+			} else if (tab == erpModulesTab) {
+				if (userErpModulesComponent == null) {
+					userErpModulesComponent = new UserErpModulesComponent(authService);
+				}
+				content.add(userErpModulesComponent);
+				if (user != null) {
+					userErpModulesComponent.setUserId(user.getId());
+					currentTab = erpModulesTab;
+				}
 			}
 		});
 	}

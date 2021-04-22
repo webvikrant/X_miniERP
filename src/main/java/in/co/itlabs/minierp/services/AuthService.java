@@ -21,6 +21,7 @@ import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import in.co.itlabs.minierp.entities.College;
 import in.co.itlabs.minierp.entities.User;
+import in.co.itlabs.minierp.entities.UserErpModule;
 import lombok.Data;
 import lombok.Getter;
 
@@ -161,6 +162,7 @@ public class AuthService {
 			user = con.createQuery(sql).addParameter("id", id).executeAndFetchFirst(User.class);
 
 			if (user != null) {
+				// permitted colleges
 				String userCollegeSql = "select collegeId from user_college where userId = :userId";
 				List<Integer> collegeIds = con.createQuery(userCollegeSql).addParameter("userId", user.getId())
 						.executeScalarList(Integer.class);
@@ -173,6 +175,13 @@ public class AuthService {
 					colleges.add(college);
 				}
 				user.setColleges(colleges);
+
+				// permitted modules
+				String userModuleSql = "select * from user_erpmodule where userId = :userId order by erpModule";
+				List<UserErpModule> userErpModules = con.createQuery(userModuleSql).addParameter("userId", user.getId())
+						.executeAndFetch(UserErpModule.class);
+
+				user.setUserErpModules(userErpModules);
 			}
 
 			con.close();
@@ -281,6 +290,36 @@ public class AuthService {
 				for (College college : colleges) {
 					query.addParameter("userId", userId).addParameter("collegeId", college.getId()).executeUpdate();
 				}
+			}
+			con.commit();
+			success = true;
+		} catch (Exception e) {
+			logger.debug(e.getMessage());
+			messages.add(e.getMessage());
+		}
+		return success;
+	}
+
+	public boolean updateUserErpModules(List<String> messages, int userId, List<UserErpModule> userErpModules) {
+
+		boolean success = false;
+
+		Sql2o sql2o = databaseService.getSql2o();
+
+		String deleteSql = "delete from user_erpmodule where userId = :userId";
+		String insertSql = "insert into user_erpmodule(userId, erpModule, canCreate, canRead, canUpdate, canDelete)"
+				+ " values(:userId, :erpModule, :canCreate, :canRead, :canUpdate, :canDelete)";
+
+		try (Connection con = sql2o.beginTransaction()) {
+			con.createQuery(deleteSql).addParameter("userId", userId).executeUpdate();
+
+			Query insertQuery = con.createQuery(insertSql);
+			for (UserErpModule userErpModule : userErpModules) {
+				insertQuery.addParameter("userId", userId).addParameter("erpModule", userErpModule.getErpModule())
+						.addParameter("canCreate", userErpModule.isCanCreate())
+						.addParameter("canRead", userErpModule.isCanRead())
+						.addParameter("canUpdate", userErpModule.isCanUpdate())
+						.addParameter("canDelete", userErpModule.isCanDelete()).executeUpdate();
 			}
 			con.commit();
 			success = true;
