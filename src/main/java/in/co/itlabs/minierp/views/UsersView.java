@@ -107,12 +107,12 @@ public class UsersView extends VerticalLayout implements BeforeEnterObserver {
 		grid.addColumn("entityId").setHeader("Linked entity Id").setWidth("150px");
 		grid.addColumn("entityName").setHeader("Linked entity Name").setWidth("150px");
 
-		grid.addComponentColumn(student -> {
+		grid.addComponentColumn(user -> {
 			Button button = new Button("More", VaadinIcon.ARROW_FORWARD.create());
 			button.addThemeVariants(ButtonVariant.LUMO_SMALL);
 			button.addClickListener(e -> {
-				VaadinSession.getCurrent().setAttribute(User.class, student);
-				UI.getCurrent().navigate("student-details");
+				VaadinSession.getCurrent().setAttribute(User.class, user);
+				UI.getCurrent().navigate(UserDetailsView.class);
 			});
 
 			return button;

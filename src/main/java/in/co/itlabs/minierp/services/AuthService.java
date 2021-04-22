@@ -3,6 +3,7 @@ package in.co.itlabs.minierp.services;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -158,6 +159,22 @@ public class AuthService {
 		try (Connection con = sql2o.open()) {
 			String sql = "select * from user where id = :id";
 			user = con.createQuery(sql).addParameter("id", id).executeAndFetchFirst(User.class);
+
+			if (user != null) {
+				String userCollegeSql = "select collegeId from user_college where userId = :userId";
+				List<Integer> collegeIds = con.createQuery(userCollegeSql).addParameter("userId", user.getId())
+						.executeScalarList(Integer.class);
+
+				Set<College> colleges = new HashSet<College>();
+				String collegeSql = "select * from college where id = :id";
+				for (int collegeId : collegeIds) {
+					College college = con.createQuery(collegeSql).addParameter("id", collegeId)
+							.executeAndFetchFirst(College.class);
+					colleges.add(college);
+				}
+				user.setColleges(colleges);
+			}
+
 			con.close();
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
@@ -247,4 +264,30 @@ public class AuthService {
 		return authUser;
 	}
 
+	// update
+	public boolean updateUserColleges(List<String> messages, int userId, Set<College> colleges) {
+
+		boolean success = false;
+
+		Sql2o sql2o = databaseService.getSql2o();
+
+		String deleteUserCollegeSql = "delete from user_college where userId = :userId";
+		String insertUserCollegeSql = "insert into user_college(userId, collegeId) values(:userId, :collegeId)";
+
+		try (Connection con = sql2o.beginTransaction()) {
+			con.createQuery(deleteUserCollegeSql).addParameter("userId", userId).executeUpdate();
+			if (colleges != null && !colleges.isEmpty()) {
+				Query query = con.createQuery(insertUserCollegeSql);
+				for (College college : colleges) {
+					query.addParameter("userId", userId).addParameter("collegeId", college.getId()).executeUpdate();
+				}
+			}
+			con.commit();
+			success = true;
+		} catch (Exception e) {
+			logger.debug(e.getMessage());
+			messages.add(e.getMessage());
+		}
+		return success;
+	}
 }

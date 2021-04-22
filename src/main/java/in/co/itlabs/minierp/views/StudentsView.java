@@ -132,7 +132,7 @@ public class StudentsView extends VerticalLayout {
 			button.addThemeVariants(ButtonVariant.LUMO_SMALL);
 			button.addClickListener(e -> {
 				VaadinSession.getCurrent().setAttribute(Student.class, student);
-				UI.getCurrent().navigate("student-details");
+				UI.getCurrent().navigate(StudentDetailsView.class);
 			});
 
 			return button;
