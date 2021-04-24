@@ -5,6 +5,8 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
 
@@ -19,6 +21,8 @@ import in.co.itlabs.minierp.entities.Session;
 @ApplicationScoped
 public class AcademicService {
 
+	private static final Logger logger = LoggerFactory.getLogger(AcademicService.class);
+	
 	@Inject
 	private DatabaseService databaseService;
 
@@ -172,6 +176,27 @@ public class AcademicService {
 	// =================================================================================
 	// schools
 	// =================================================================================
+
+	// create
+	public int createSchool(List<String> messages, School school) {
+
+		int newSchoolId = 0;
+		Sql2o sql2o = databaseService.getSql2o();
+		String sql = "insert into school (name) values(:name)";
+
+		try (Connection con = sql2o.beginTransaction()) {
+			int schoolId = con.createQuery(sql).addParameter("name", school.getName()).executeUpdate()
+					.getKey(Integer.class);
+
+			con.commit();
+
+			newSchoolId = schoolId;
+		} catch (Exception e) {
+			logger.debug(e.getMessage());
+			messages.add(e.getMessage());
+		}
+		return newSchoolId;
+	}
 
 	public List<School> getAllSchools() {
 		List<School> schools = null;

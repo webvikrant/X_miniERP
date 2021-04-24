@@ -1,5 +1,8 @@
 package in.co.itlabs.minierp.components;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
@@ -7,6 +10,8 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.BigDecimalField;
@@ -46,6 +51,7 @@ public class QualificationEditor extends VerticalLayout implements Editor {
 	// non-ui
 
 	private AcademicService academicService;
+	private final List<String> messages = new ArrayList<>();
 
 	public QualificationEditor(AcademicService academicService) {
 		this.academicService = academicService;
@@ -152,6 +158,19 @@ public class QualificationEditor extends VerticalLayout implements Editor {
 			return school.getName();
 		});
 		schoolCombo.setItems(academicService.getAllSchools());
+
+		schoolCombo.addCustomValueSetListener(e -> {
+			if (e.getDetail() != null && !e.getDetail().isBlank()) {
+				School school = new School();
+				school.setName(e.getDetail());
+				int newSchoolId = academicService.createSchool(messages, school);
+				if (newSchoolId > 0) {
+					school.setId(newSchoolId);
+					schoolCombo.setItems(academicService.getAllSchools());
+					schoolCombo.setValue(school);
+				}
+			}
+		});
 	}
 
 	public void setAcademicQualification(Qualification academicQualification) {
